@@ -212,7 +212,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           });
           const data = await res.json();
           if (data.success) {
-            document.getElementById('supabaseStatusText').textContent = data.isSupabase ? '⚡ Supabase Cloud Connected' : '⚡ Supabase Ready';
+            const statusEl = document.getElementById('supabaseStatusText');
+            if (statusEl) statusEl.textContent = data.isSupabase ? '⚡ Supabase Cloud Connected' : '⚡ Supabase Ready';
             supabaseModal?.classList.remove('active');
             this.showToast(`Database configuration saved (${data.mode})!`, 'check');
           }
