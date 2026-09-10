@@ -4037,22 +4037,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (stageTitle) stageTitle.textContent = `LIVE SESSION: ${session.skill} • "${session.topic || 'Skill Swap Exchange'}"`;
 
-      // Zoom Meeting Badge population
-      const zoomIdEl = document.getElementById('liveRoomZoomIdDisplay');
-      const zoomPassEl = document.getElementById('liveRoomZoomPassDisplay');
-      const zoomLinkEl = document.getElementById('liveRoomZoomDirectLink');
-      const zoomPill = document.getElementById('liveRoomZoomMeetingPill');
-      if (meetingData && (meetingData.meetingNumber || session.zoom_meeting_id)) {
-        if (zoomPill) zoomPill.style.display = 'inline-flex';
-        if (zoomIdEl) zoomIdEl.textContent = meetingData.meetingNumber || session.zoom_meeting_id || '--';
-        if (zoomPassEl) zoomPassEl.textContent = meetingData.passcode || session.zoom_meeting_password || '--';
-        if (zoomLinkEl) {
-          const directUrl = meetingData.joinUrl || session.zoom_join_url || '#';
-          zoomLinkEl.href = directUrl;
-          zoomLinkEl.title = `Direct Zoom Meeting Link: ${directUrl}`;
-        }
-      }
-
       if (isCohort) {
         if (typeBadge) typeBadge.innerHTML = `<i class="fa-solid fa-users"></i> Live Group Masterclass`;
         if (titleDisplay) titleDisplay.textContent = `Interactive Live Classroom: ${session.skill}`;
