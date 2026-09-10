@@ -461,6 +461,28 @@ class SkillSwapStore {
     return data;
   }
 
+  async fetchLiveMeeting(sessionId) {
+    const res = await fetch(`${this.apiBase}/sessions/${sessionId}/live-meeting`, {
+      method: 'POST',
+      headers: this.getAuthHeaders()
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Failed to authenticate or initialize live meeting');
+    return data;
+  }
+
+  async endLiveMeeting(sessionId) {
+    try {
+      const res = await fetch(`${this.apiBase}/sessions/${sessionId}/end-meeting`, {
+        method: 'POST',
+        headers: this.getAuthHeaders()
+      });
+      return await res.json();
+    } catch (e) {
+      console.warn('Could not end live meeting:', e.message);
+    }
+  }
+
   async fetchSessions() {
     try {
       const res = await fetch(`${this.apiBase}/sessions`, {

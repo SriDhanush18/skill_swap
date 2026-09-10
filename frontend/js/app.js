@@ -3731,19 +3731,261 @@ document.addEventListener('DOMContentLoaded', async () => {
       }).join('');
     },
 
-    async renderLiveRoom(sessionId) {
-      const sessions = window.store.sessions || await window.store.fetchSessions();
-      const currentPersona = window.store.getCurrentPersona();
+    async openLiveRoom(sessionId) {
+      this.activeLiveRoomSessionId = sessionId;
+      this.switchView('view-room');
+      await this.renderLiveRoom(sessionId);
+    },
 
+    async enrollInLiveCohort(sessionId) {
+      try {
+        const res = await window.store.enrollInCohort(sessionId);
+        this.showToast(`🎉 Enrolled in Masterclass! Locked ${res.creditsLocked || 1.0} Credits in escrow (1 Cr/student).`, 'lock');
+        await window.store.fetchSessions();
+        await window.store.fetchWallet();
+        this.renderNavbar();
+        await this.renderSessions();
+        await this.renderWallet();
+        if (this.currentTab === 'view-room') {
+          await this.renderLiveRoom(sessionId);
+        }
+      } catch (err) {
+        alert('Enrollment failed: ' + err.message);
+      }
+    },
+
+    async concludeCohortSession(sessionId) {
+      const session = (window.store.sessions || []).find(s => s.id === sessionId);
+      const attendeeCount = session?.enrolled_count || (session?.attendees?.length) || 0;
+      const feePerStudent = 1.0; // 1 credit per student attended
+      const totalCredits = (attendeeCount * feePerStudent).toFixed(1);
+
+      if (!confirm(`Are you sure you want to conclude this live masterclass with ${attendeeCount} attending students? You will immediately receive +${totalCredits} Skill Credits (${attendeeCount} students × 1.0 Cr)!`)) {
+        return;
+      }
+
+      try {
+        const res = await window.store.completeCohortSession(sessionId, 5, 'Live group masterclass successfully concluded', ['Group Cohort', 'Hands-on Coding', 'Super Clear']);
+        this.showToast(`🎉 Cohort concluded! +${res.totalEarnedCredits || totalCredits} Credits deposited into your wallet (${attendeeCount} attending students)!`, 'award');
+        await window.store.init();
+        this.renderAll();
+        if (this.currentTab === 'view-room') {
+          await this.renderLiveRoom(sessionId);
+        }
+      } catch (err) {
+        alert('Error completing cohort: ' + err.message);
+      }
+    },
+
+    updateBookingCalculation() {
+      const hours = Number(document.getElementById('bookDurationSelect').value);
+      const rate = Number(document.getElementById('bookHourlyRate').value || 1.0);
+      const total = (hours * rate).toFixed(1);
+      const notice = document.getElementById('bookEscrowNotice');
+      if (notice) {
+        notice.innerHTML = `<strong>${hours} Hours &times; ${rate} Credits/hr = ${total} Credits</strong> will be locked in escrow. Your mentor receives credits only after the session concludes.`;
+      }
+    },
+
+    // ==========================================
+    // Multi-Persona & Multi-Role Authentication Handlers
+    // ==========================================
+    bindAuthEvents() {
+      const authModal = document.getElementById('authModal');
+      const openAuth = (defaultTab = 'authSignInTab') => {
+        this.updateAuthModalJwtInspector();
+        if (defaultTab) {
+          document.querySelectorAll('.auth-tab-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.authtab === defaultTab);
+          });
+          document.querySelectorAll('.auth-tab-pane').forEach(p => {
+            p.style.display = p.id === defaultTab ? 'block' : 'none';
+            p.classList.toggle('active', p.id === defaultTab);
+          });
+        }
+        this.openModal('authModal');
+      };
+
+      const closeAuth = () => {
+        this.closeModal('authModal');
+        const loginErr = document.getElementById('loginErrorMsg');
+        const regErr = document.getElementById('regErrorMsg');
+        if (loginErr) loginErr.style.display = 'none';
+        if (regErr) regErr.style.display = 'none';
+      };
+
+      // Navbar Triggers
+      document.getElementById('navAuthBtn')?.addEventListener('click', () => openAuth('authSignInTab'));
+
+      document.getElementById('dropdownLogoutBtn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('personaDropdown')?.classList.remove('show');
+        if (window.skillSwapConference && window.skillSwapConference.isInCall) {
+          window.skillSwapConference.leaveMeeting();
+        }
+        window.store.logout();
+        this.showToast('Signed out successfully. Switched to guest login.', 'user');
+        this.renderAll();
+        openAuth('authSignInTab');
+      });
+
+      document.getElementById('closeAuthModalBtn')?.addEventListener('click', closeAuth);
+      document.getElementById('cancelAuthLoginBtn')?.addEventListener('click', closeAuth);
+      document.getElementById('cancelAuthRegisterBtn')?.addEventListener('click', closeAuth);
+      document.getElementById('closeAuthRolesBtn')?.addEventListener('click', closeAuth);
+
+      // Single User Quick-Fill Button in Login Modal
+      document.getElementById('authSingleUserQuickFillBtn')?.addEventListener('click', () => {
+        const user = window.store.getCurrentPersona();
+        const emailInput = document.getElementById('loginEmailInput');
+        const passInput = document.getElementById('loginPasswordInput');
+        if (emailInput) emailInput.value = user.email || (user.id + '@vignan.ac.in') || 'sri@vignan.ac.in';
+        if (passInput) passInput.value = 'Password123';
+        this.showToast(`Auto-filled verified credentials for ${user.name || 'Sri Dhanush'}`, 'user');
+      });
+
+      // Auth Tabs Navigation
+      document.querySelectorAll('.auth-tab-btn').forEach(tabBtn => {
+        tabBtn.addEventListener('click', () => {
+          document.querySelectorAll('.auth-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.auth-tab-pane').forEach(p => {
+            p.classList.remove('active');
+            p.style.display = 'none';
+          });
+
+          tabBtn.classList.add('active');
+          const targetId = tabBtn.dataset.authtab;
+          const targetPane = document.getElementById(targetId);
+          if (targetPane) {
+            targetPane.style.display = 'block';
+            targetPane.classList.add('active');
+          }
+          if (targetId === 'authRolesTab') {
+            this.updateAuthModalJwtInspector();
+          }
+        });
+      });
+
+      // Role Selection Cards in Registration Form
+      document.querySelectorAll('.role-card-label').forEach(card => {
+        card.addEventListener('click', () => {
+          document.querySelectorAll('.role-card-label').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          const radio = card.querySelector('input[type="radio"]');
+          if (radio) radio.checked = true;
+        });
+      });
+
+      // Login Form Submit with Email & Password Pre-Verification
+      const loginForm = document.getElementById('authLoginForm');
+      loginForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const errorBox = document.getElementById('loginErrorMsg');
+        if (errorBox) errorBox.style.display = 'none';
+
+        const emailOrId = document.getElementById('loginEmailInput')?.value.trim();
+        const password = document.getElementById('loginPasswordInput')?.value;
+        const submitBtn = document.getElementById('submitLoginBtn');
+        const origText = submitBtn ? submitBtn.innerHTML : '';
+
+        // 1. Client-Side Email Verification
+        if (!emailOrId) {
+          if (errorBox) {
+            errorBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Email Missing:</strong> Please enter your registered email or University ID.';
+            errorBox.style.display = 'block';
+          }
+          this.showToast('Please enter your email or University ID', 'lock');
+          return;
+        }
+
+        if (emailOrId.includes('@')) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailOrId)) {
+            if (errorBox) {
+              errorBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Invalid Email Format:</strong> Please enter a valid email address (e.g., student@vignan.ac.in).';
+              errorBox.style.display = 'block';
+            }
+            this.showToast('Invalid email format', 'lock');
+            return;
+          }
+        }
+
+        // 2. Client-Side Password Rule Verification (Capital start, min 6 chars)
+        if (!password) {
+          if (errorBox) {
+            errorBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Password Missing:</strong> Please enter your password.';
+            errorBox.style.display = 'block';
+          }
+          this.showToast('Please enter your password', 'lock');
+          return;
+        }
+
+        if (!/^[A-Z]/.test(password)) {
+          if (errorBox) {
+            errorBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Password Rule Violation:</strong> Password must start with a Capital Letter (A-Z).';
+            errorBox.style.display = 'block';
+          }
+          this.showToast('Password must start with Capital Letter (A-Z)', 'lock');
+          return;
+        }
+
+        if (password.length < 6) {
+          if (errorBox) {
+            errorBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <strong>Password Too Short:</strong> Password must be at least 6 characters long.';
+            errorBox.style.display = 'block';
+          }
+          this.showToast('Password must be at least 6 characters long', 'lock');
+          return;
+        }
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying Credentials & Database Token...';
+          }
+
+          const res = await window.store.login(emailOrId, password);
+          closeAuth();
+          await this.renderAll();
+          this.showToast(`🎉 Welcome back, ${res.user?.name || 'Student'}! Logged in as ${res.user?.role || 'STUDENT'}.`, 'circle-check');
+        } catch (err) {
+          if (errorBox) {
+            errorBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <strong>Login Failed:</strong> ${err.message}`;
+            errorBox.style.display = 'block';
+          }
+          this.showToast(err.message, 'triangle-exclamation');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = origText;
+          }
+        }
+      });
+    },
+
+    async renderLiveRoom(sessionId) {
+      const currentPersona = window.store.getCurrentPersona();
       let session = null;
-      if (sessionId) {
-        session = sessions.find(s => s.id === sessionId);
-        this.activeLiveRoomSessionId = sessionId;
-      } else if (this.activeLiveRoomSessionId) {
-        session = sessions.find(s => s.id === this.activeLiveRoomSessionId);
+      let meetingData = null;
+
+      const sid = sessionId || this.activeLiveRoomSessionId;
+      if (sid) {
+        try {
+          const meetRes = await window.store.fetchLiveMeeting(sid);
+          if (meetRes && meetRes.success) {
+            session = meetRes.session;
+            meetingData = meetRes.meeting;
+            this.activeLiveRoomSessionId = session.id;
+          }
+        } catch (err) {
+          console.warn('Live meeting API notice:', err.message);
+          const sessions = window.store.sessions || await window.store.fetchSessions();
+          session = sessions.find(s => s.id === sid) || sessions[0];
+        }
       }
 
       if (!session) {
+        const sessions = window.store.sessions || await window.store.fetchSessions();
         session = sessions.find(s => s.session_type === 'GROUP_COHORT' && s.status === 'Confirmed') ||
                   sessions.find(s => s.session_type === 'GROUP_COHORT') ||
                   sessions[0];
@@ -3753,9 +3995,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!session) return;
 
       const isCohort = session.session_type === 'GROUP_COHORT';
-      const isTutor = (session.teacher_id === currentPersona.id || session.tutor_id === currentPersona.id);
-      const tutorName = session.teacherName || session.teacher_id || 'Instructor';
-      const tutorId = session.teacher_id || session.tutor_id || 'rishitha';
+      const isTutor = (session.teacher_id === currentPersona.id || session.teacher?.id === currentPersona.id);
+      const tutorName = session.teacher?.name || session.teacherName || session.teacher_id || 'Instructor';
+      const tutorId = session.teacher?.id || session.teacher_id || 'sri';
+      const learnerName = session.learner?.name || session.studentName || session.student_id || 'Learner';
+      const learnerId = session.learner?.id || session.student_id || 'rishitha';
 
       // Update Header Elements
       const typeBadge = document.getElementById('liveRoomTypeBadge');
@@ -3780,151 +4024,66 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (instAvatar) instAvatar.src = window.getStudentAvatar(tutorId);
       if (instName) instName.textContent = `${tutorName} (Host Tutor)`;
-      if (instTier) instTier.textContent = `🥇 Elite Master Tutor • 1.0 Cr / student`;
-      if (instTag) instTag.textContent = `${tutorName} (Lead Instructor)`;
+      if (instTier) instTier.textContent = `🥇 Verified Tutor • ${session.rate || 1.0} Cr/hr`;
+      if (instTag) instTag.innerHTML = `<i class="fa-solid fa-chalkboard-user"></i> ${tutorName} (Lead Instructor)`;
 
-      if (stageTitle) stageTitle.textContent = `LIVE MASTERCLASS: ${session.skill} • "${session.topic || 'Cohort Lab'}"`;
+      if (stageTitle) stageTitle.textContent = `LIVE SESSION: ${session.skill} • "${session.topic || 'Skill Swap Exchange'}"`;
 
       if (isCohort) {
         if (typeBadge) typeBadge.innerHTML = `<i class="fa-solid fa-users"></i> Live Group Masterclass`;
         if (titleDisplay) titleDisplay.textContent = `Interactive Live Classroom: ${session.skill}`;
-        if (subtitleDisplay) subtitleDisplay.textContent = `Real-time multi-student cohort. Tutor earns 1 credit per student (1 student attended = 1 credit added)!`;
+        if (subtitleDisplay) subtitleDisplay.textContent = `Real-time multi-student cohort. Tutor earns 1 credit per attending student.`;
 
-        // Fetch attendee roster
-        let attendees = [];
+        let attendees = session.attendees || [];
         try {
           attendees = await window.store.fetchCohortAttendees(session.id);
-        } catch (e) {
-          attendees = session.attendees || [];
-        }
+        } catch (e) {}
 
         const countN = attendees.length;
-        const feePerStudent = 1.0; // 1 credit per student
+        const feePerStudent = 1.0;
         const totalBounty = (countN * feePerStudent).toFixed(1);
 
         if (attendeeCountBadge) attendeeCountBadge.innerHTML = `<i class="fa-solid fa-user-check"></i> ${countN} Students Joined (N = ${countN})`;
         if (rosterCountEl) rosterCountEl.textContent = `${countN} / ${session.max_capacity || 5} Enrolled`;
-        if (bountyDisplay) bountyDisplay.innerHTML = `<i class="fa-solid fa-coins"></i> Tutor Pool: +${totalBounty} Credits (${countN} Students &times; 1.0 Cr)`;
+        if (bountyDisplay) bountyDisplay.innerHTML = `<i class="fa-solid fa-coins"></i> Tutor Pool: +${totalBounty} Credits (${countN} Students × 1.0 Cr)`;
         if (escrowCalculationText) {
-          escrowCalculationText.innerHTML = `<strong>${countN} Students &times; 1.0 Credit = ${totalBounty} Credits</strong> held in escrow (1 student attended = 1 credit added). Released directly to tutor <strong>${tutorName}</strong> upon conclusion!`;
+          escrowCalculationText.innerHTML = `<strong>${countN} Students × 1.0 Credit = ${totalBounty} Credits</strong> held in escrow. Released upon conclusion!`;
         }
 
-        // Render Student Attendee Video Grid Tiles with Live Video Feeds
         if (attendeeGridContainer) {
-          if (countN === 0) {
-            attendeeGridContainer.innerHTML = `
-              <div class="video-box" style="display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border: 1px dashed var(--border-medium); min-height: 180px;">
-                <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-                  <i class="fa-solid fa-user-plus" style="font-size: 1.5rem; margin-bottom: 0.4rem; display: block;"></i>
-                  Waiting for students to enroll (N = 0)
-                </div>
-              </div>
-            `;
-          } else {
-            attendeeGridContainer.innerHTML = attendees.map((att, idx) => {
-              const attId = att.student_id || `student_${idx}`;
-              const attName = att.student_name || 'Student';
-              const lockedCr = att.credits_locked || feePerStudent;
-              return `
-                <div class="video-box student-tile" data-student-id="${attId}" style="position: relative;">
-                  <canvas class="room-video-feed student-video-canvas" id="studentCanvas_${idx}" width="320" height="240"></canvas>
-                  <div class="video-live-badge"><span class="status-dot-green"></span> <span>HD 720p</span></div>
-                  <div class="video-name-tag"><i class="fa-solid fa-graduation-cap"></i> ${attName} (Student #${idx + 1})</div>
-                  <div class="video-status-mic"><i class="fa-solid fa-microphone${idx % 2 === 0 ? '' : '-slash'}"></i></div>
-                </div>
-              `;
-            }).join('');
-
-            // Launch active live video rendering for all student attendees
-            this.startStudentVideoStreams(attendees);
-          }
-        }
-
-        // Render Roster List in Sidebar
-        if (attendeeListContainer) {
-          if (countN === 0) {
-            attendeeListContainer.innerHTML = `<div style="font-size: 0.75rem; color: var(--text-muted); padding: 0.4rem;">No students enrolled yet.</div>`;
-          } else {
-            attendeeListContainer.innerHTML = attendees.map((att, idx) => {
-              const attId = att.student_id || `student_${idx}`;
-              const attName = att.student_name || 'Student';
-              const lockedCr = att.credits_locked || feePerStudent;
-              return `
-                <div style="background: var(--bg-subtle); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); font-size: 0.76rem; display: flex; justify-content: space-between; align-items: center;">
-                  <div style="display: flex; align-items: center; gap: 0.4rem;">
-                    <img src="${window.getStudentAvatar(attId)}" style="width: 22px; height: 22px; border-radius: 50%;" onerror="window.handleAvatarError(this, '${attId}')">
-                    <span style="font-weight: 700;">${attName}</span>
-                  </div>
-                  <span style="color: var(--accent-emerald); font-weight: 700; font-size: 0.72rem;">${lockedCr} Cr</span>
-                </div>
-              `;
-            }).join('');
-          }
-        }
-
-        // Button states
-        const isEnrolled = attendees.some(a => a.student_id === currentPersona.id);
-        if (isTutor) {
-          if (completeBtn) {
-            completeBtn.style.display = 'inline-flex';
-            completeBtn.innerHTML = `<i class="fa-solid fa-coins"></i> Conclude Masterclass & Claim All ${countN} &times; ${feePerStudent} Cr (+${totalBounty} Cr)`;
-            completeBtn.onclick = () => this.concludeCohortSession(session.id);
-          }
-          if (sidebarCompleteBtn) {
-            sidebarCompleteBtn.style.display = 'inline-flex';
-            sidebarCompleteBtn.innerHTML = `<i class="fa-solid fa-coins"></i> Conclude & Claim All +${totalBounty} Credits`;
-            sidebarCompleteBtn.onclick = () => this.concludeCohortSession(session.id);
-          }
-          if (enrollBtn) enrollBtn.style.display = 'none';
-        } else {
-          if (enrollBtn) {
-            enrollBtn.style.display = !isEnrolled && session.status === 'Confirmed' ? 'inline-flex' : 'none';
-            enrollBtn.innerHTML = `<i class="fa-solid fa-user-plus"></i> Enroll in Masterclass (${feePerStudent} Cr)`;
-          }
-          if (completeBtn) {
-            completeBtn.style.display = 'inline-flex';
-            completeBtn.innerHTML = `<i class="fa-solid fa-star"></i> Submit Review for Instructor`;
-            completeBtn.onclick = () => this.openReviewModal(session.id);
-          }
-          if (sidebarCompleteBtn) {
-            sidebarCompleteBtn.style.display = 'inline-flex';
-            sidebarCompleteBtn.innerHTML = `<i class="fa-solid fa-star"></i> Submit Review for Instructor`;
-            sidebarCompleteBtn.onclick = () => this.openReviewModal(session.id);
-          }
+          attendeeGridContainer.innerHTML = '';
         }
       } else {
-        // 1-on-1 Swap logic
+        // 1-on-1 Swap between User A and User B
         if (typeBadge) typeBadge.innerHTML = `<i class="fa-solid fa-user"></i> 1-on-1 Swap Session`;
         if (titleDisplay) titleDisplay.textContent = `1-on-1 Peer Session: ${session.skill}`;
-        if (subtitleDisplay) subtitleDisplay.textContent = `Collaborative code room with mentor ${tutorName}.`;
-        if (attendeeCountBadge) attendeeCountBadge.innerHTML = `<i class="fa-solid fa-user-check"></i> 1 Learner (${session.studentName || session.student_id})`;
+        if (subtitleDisplay) subtitleDisplay.textContent = `Real-time interactive session between ${tutorName} and ${learnerName}.`;
+        if (attendeeCountBadge) attendeeCountBadge.innerHTML = `<i class="fa-solid fa-user-check"></i> 1 Learner (${learnerName})`;
         if (bountyDisplay) bountyDisplay.innerHTML = `<i class="fa-solid fa-coins"></i> Escrow: ${session.credits} Credits`;
         if (escrowCalculationText) {
           escrowCalculationText.innerHTML = `<strong>${session.credits} Credits</strong> held in escrow. Released upon session review.`;
         }
         if (rosterCountEl) rosterCountEl.textContent = `1 Learner`;
         if (attendeeListContainer) {
-          const sName = session.studentName || session.student_id || 'Student';
           attendeeListContainer.innerHTML = `
             <div style="background: var(--bg-subtle); padding: 0.35rem 0.55rem; border-radius: var(--radius-sm); font-size: 0.76rem; display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 700;">${sName}</span>
+              <span style="font-weight: 700;">${learnerName}</span>
               <span style="color: var(--accent-emerald); font-weight: 700;">${session.credits} Cr</span>
             </div>
           `;
         }
+
         if (attendeeGridContainer) {
-          const sName = session.studentName || session.student_id || 'Sri Dhanush';
-          const sId = session.student_id || 'sri';
           attendeeGridContainer.innerHTML = `
-            <div class="video-box student-tile" style="position: relative;">
-              <canvas class="room-video-feed student-video-canvas" id="studentCanvas_0" width="320" height="240"></canvas>
+            <div class="video-box student-tile" id="peerTile_learner" style="position: relative;">
+              <video id="peerVideo_learner" class="room-video-feed" autoplay playsinline style="display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;"></video>
               <div class="video-live-badge"><span class="status-dot-green"></span> <span>HD 720p</span></div>
-              <div class="video-name-tag"><i class="fa-solid fa-graduation-cap"></i> ${sName} (Learner)</div>
-              <div class="video-status-mic"><i class="fa-solid fa-microphone"></i></div>
+              <div class="video-name-tag"><i class="fa-solid fa-graduation-cap"></i> ${learnerName} (Learner)</div>
+              <div class="video-status-mic" id="peerMicTag_learner"><i class="fa-solid fa-microphone"></i></div>
             </div>
           `;
-          this.drawProceduralVideoFeed('studentCanvas_0', sName, 'STUDENT', 1);
         }
+
         if (enrollBtn) enrollBtn.style.display = 'none';
         if (completeBtn) {
           completeBtn.style.display = 'inline-flex';
@@ -3938,240 +4097,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      // Activate Instructor Live Video Stream Feed
-      this.startLiveRoomInstructorStream(tutorId, tutorName);
-    },
-
-    // ==========================================
-    // Live Audio & Video Controls & Settings Engine
-    // ==========================================
-    async startLiveRoomInstructorStream(tutorId, tutorName) {
-      const user = window.store.getCurrentPersona();
-      const name = tutorName || user.name || 'Sri Dhanush';
-      const videoEl = document.getElementById('liveRoomInstructorVideo');
-      const canvasEl = document.getElementById('liveRoomInstructorCanvas');
-      const avatarHolder = document.getElementById('liveRoomInstructorAvatarHolder');
-      const resTag = document.getElementById('liveRoomInstructorResTag');
-
-      if (resTag) {
-        resTag.textContent = this.mediaState.isCamOff ? 'Camera Off' : `${(this.mediaSettings.resolution || '1080p').toUpperCase()} 60FPS`;
+      // Start unified live conference engine
+      if (meetingData && window.skillSwapConference) {
+        await window.skillSwapConference.startMeeting(session.id, session, meetingData);
       }
-
-      if (this.mediaState.isCamOff) {
-        if (videoEl) videoEl.style.display = 'none';
-        if (canvasEl) canvasEl.style.display = 'none';
-        if (avatarHolder) avatarHolder.style.display = 'block';
-        return;
-      }
-
-      if (avatarHolder) avatarHolder.style.display = 'none';
-
-      // Try actual webcam video stream
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-          this.mediaState.liveStream = stream;
-          if (videoEl) {
-            videoEl.srcObject = stream;
-            videoEl.style.display = 'block';
-          }
-          if (canvasEl) canvasEl.style.display = 'none';
-          return;
-        } catch (e) {
-          // Camera permission denied or simulated device - fall back to realistic dynamic live video feed
-        }
-      }
-
-      // High-Definition Realistic Live Video Feed Canvas
-      if (videoEl) videoEl.style.display = 'none';
-      if (canvasEl) {
-        canvasEl.style.display = 'block';
-        this.drawProceduralVideoFeed('liveRoomInstructorCanvas', name, 'INSTRUCTOR', 0);
-      }
-    },
-
-    startStudentVideoStreams(attendees) {
-      if (!attendees || !Array.isArray(attendees)) return;
-      attendees.forEach((att, idx) => {
-        const attName = att.student_name || `Student ${idx + 1}`;
-        this.drawProceduralVideoFeed(`studentCanvas_${idx}`, attName, 'STUDENT', idx + 2);
-      });
-    },
-
-    drawProceduralVideoFeed(canvasId, name, role = 'STUDENT', seed = 0) {
-      const canvas = document.getElementById(canvasId);
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      if (!this.videoAnimators) this.videoAnimators = {};
-      if (this.videoAnimators[canvasId]) {
-        cancelAnimationFrame(this.videoAnimators[canvasId]);
-      }
-
-      let frame = seed * 45;
-      const isInstructor = role === 'INSTRUCTOR';
-      const baseHue = isInstructor ? 220 : ((seed * 67 + 160) % 360);
-
-      const render = () => {
-        frame++;
-        const w = canvas.width || 320;
-        const h = canvas.height || 240;
-
-        // 1. Dynamic Studio / Classroom Background Lighting
-        const grad = ctx.createRadialGradient(
-          w / 2 + Math.sin(frame * 0.02) * 40,
-          h / 2 + Math.cos(frame * 0.025) * 30,
-          20,
-          w / 2,
-          h / 2,
-          w * 0.8
-        );
-        grad.addColorStop(0, `hsl(${baseHue}, 45%, ${isInstructor ? '28%' : '20%'})`);
-        grad.addColorStop(1, `hsl(${baseHue + 25}, 65%, 7%)`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-
-        // 2. Animated Bokeh & Ambient Classroom Lights
-        for (let i = 0; i < 4; i++) {
-          const bx = (w * (0.2 + 0.2 * i) + Math.sin(frame * 0.015 + i) * 25) % w;
-          const by = (h * (0.3 + 0.15 * i) + Math.cos(frame * 0.018 + i) * 20) % h;
-          ctx.beginPath();
-          ctx.arc(bx, by, 18 + i * 8, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${baseHue + i * 30}, 80%, 60%, 0.12)`;
-          ctx.fill();
-        }
-
-        // 3. Dynamic Human Head & Body Silhouette with Gentle Breathing Motion
-        const breath = Math.sin(frame * 0.04) * 3;
-        const sway = Math.sin(frame * 0.02) * 2;
-
-        // Torso / Shoulders
-        ctx.beginPath();
-        ctx.fillStyle = isInstructor ? '#1e293b' : '#334155';
-        ctx.ellipse(w / 2 + sway, h + 30 + breath, 75, 55, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Neck
-        ctx.beginPath();
-        ctx.fillStyle = `hsl(${baseHue + 10}, 35%, 65%)`;
-        ctx.rect(w / 2 - 12 + sway, h / 2 + 18 + breath, 24, 25);
-        ctx.fill();
-
-        // Head / Face
-        ctx.beginPath();
-        ctx.fillStyle = `hsl(${baseHue + 15}, 45%, 72%)`;
-        ctx.ellipse(w / 2 + sway, h / 2 - 8 + breath, 34, 42, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Hair
-        ctx.beginPath();
-        ctx.fillStyle = `hsl(${baseHue}, 50%, 15%)`;
-        ctx.ellipse(w / 2 + sway, h / 2 - 28 + breath, 36, 26, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Glasses / Feature Details
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(w / 2 - 24 + sway, h / 2 - 14 + breath, 18, 12);
-        ctx.strokeRect(w / 2 + 6 + sway, h / 2 - 14 + breath, 18, 12);
-        ctx.beginPath();
-        ctx.moveTo(w / 2 - 6 + sway, h / 2 - 8 + breath);
-        ctx.lineTo(w / 2 + 6 + sway, h / 2 - 8 + breath);
-        ctx.stroke();
-
-        // 4. Subtle Video Scanlines & Live Video Grain
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
-        for (let y = 0; y < h; y += 4) {
-          ctx.fillRect(0, y, w, 1);
-        }
-
-        // 5. Live Audio Equalizer Waveform Indicator in Corner
-        ctx.fillStyle = '#10b981';
-        for (let b = 0; b < 3; b++) {
-          const bH = 4 + Math.abs(Math.sin(frame * 0.15 + b + seed) * 12);
-          ctx.fillRect(w - 22 + b * 5, h - 18 - bH, 3, bH);
-        }
-
-        if (this.currentTab === 'view-room' || canvasId.includes('settings')) {
-          this.videoAnimators[canvasId] = requestAnimationFrame(render);
-        }
-      };
-
-      this.videoAnimators[canvasId] = requestAnimationFrame(render);
     },
 
     toggleMicrophone() {
-      this.mediaState.isMicMuted = !this.mediaState.isMicMuted;
-      const isMuted = this.mediaState.isMicMuted;
-      const micBtn = document.getElementById('roomToggleMicBtn');
-      const label = document.getElementById('roomMicBtnLabel');
-      const statusText = document.getElementById('liveMicStatusText');
-      const icon = micBtn?.querySelector('i');
+      if (window.skillSwapConference && window.skillSwapConference.isInCall) {
+        window.skillSwapConference.toggleMicrophone();
+      } else {
+        this.mediaState.isMicMuted = !this.mediaState.isMicMuted;
+        const isMuted = this.mediaState.isMicMuted;
+        const micBtn = document.getElementById('roomToggleMicBtn');
+        const label = document.getElementById('roomMicBtnLabel');
+        const statusText = document.getElementById('liveMicStatusText');
+        const icon = micBtn?.querySelector('i');
 
-      if (micBtn) {
-        micBtn.classList.toggle('active', !isMuted);
-        micBtn.classList.toggle('muted', isMuted);
+        if (micBtn) {
+          micBtn.classList.toggle('active', !isMuted);
+          micBtn.classList.toggle('muted', isMuted);
+        }
+        if (label) label.textContent = isMuted ? 'Unmute' : 'Mute';
+        if (icon) icon.className = isMuted ? 'fa-solid fa-microphone-slash' : 'fa-solid fa-microphone';
+        if (statusText) {
+          statusText.textContent = isMuted ? 'Muted' : 'Mic Live';
+          statusText.style.color = isMuted ? '#f87171' : 'var(--accent-emerald)';
+        }
+        this.showToast(isMuted ? 'Microphone Muted' : 'Microphone Live (Unmuted)', isMuted ? 'microphone-slash' : 'microphone');
       }
-      if (label) label.textContent = isMuted ? 'Unmute' : 'Mute';
-      if (icon) {
-        icon.className = isMuted ? 'fa-solid fa-microphone-slash' : 'fa-solid fa-microphone';
-      }
-      if (statusText) {
-        statusText.textContent = isMuted ? 'Muted' : 'Mic Live';
-        statusText.style.color = isMuted ? '#f87171' : 'var(--accent-emerald)';
-      }
-
-      const waveBars = document.querySelectorAll('.audio-wave-bars .bar');
-      waveBars.forEach(b => {
-        b.style.animationPlayState = isMuted ? 'paused' : 'running';
-        b.style.opacity = isMuted ? '0.3' : '1';
-      });
-
-      this.updateVideoTileMicIndicator();
-      this.showToast(isMuted ? 'Microphone Muted' : 'Microphone Live (Unmuted)', isMuted ? 'microphone-slash' : 'microphone');
     },
 
     toggleCamera() {
-      this.mediaState.isCamOff = !this.mediaState.isCamOff;
-      const isOff = this.mediaState.isCamOff;
-      const camBtn = document.getElementById('roomToggleCamBtn');
-      const label = document.getElementById('roomCamBtnLabel');
-      const statusText = document.getElementById('liveCamStatusText');
-      const badge = document.getElementById('liveCamStatusBadge');
-      const icon = camBtn?.querySelector('i');
+      if (window.skillSwapConference && window.skillSwapConference.isInCall) {
+        window.skillSwapConference.toggleCamera();
+      } else {
+        this.mediaState.isCamOff = !this.mediaState.isCamOff;
+        const isOff = this.mediaState.isCamOff;
+        const camBtn = document.getElementById('roomToggleCamBtn');
+        const label = document.getElementById('roomCamBtnLabel');
+        const statusText = document.getElementById('liveCamStatusText');
+        const icon = camBtn?.querySelector('i');
 
-      if (camBtn) {
-        camBtn.classList.toggle('active', !isOff);
-        camBtn.classList.toggle('off', isOff);
+        if (camBtn) {
+          camBtn.classList.toggle('active', !isOff);
+          camBtn.classList.toggle('off', isOff);
+        }
+        if (label) label.textContent = isOff ? 'Start Video' : 'Stop Video';
+        if (icon) icon.className = isOff ? 'fa-solid fa-video-slash' : 'fa-solid fa-video';
+        if (statusText) statusText.textContent = isOff ? 'Camera Off' : 'HD 1080p Video';
+        this.showToast(isOff ? 'Camera Stopped' : 'Camera Live', isOff ? 'video-slash' : 'video');
       }
-      if (label) label.textContent = isOff ? 'Start Video' : 'Stop Video';
-      if (icon) {
-        icon.className = isOff ? 'fa-solid fa-video-slash' : 'fa-solid fa-video';
-      }
-      if (statusText) {
-        statusText.textContent = isOff ? 'Camera Off' : `${(this.mediaSettings.resolution || '1080p').toUpperCase()} Video`;
-      }
-      if (badge) {
-        const dot = badge.querySelector('.status-dot-green');
-        if (dot) dot.style.background = isOff ? '#ef4444' : '#10b981';
-      }
-
-      this.updateVideoTileCameraState();
-      this.startLiveRoomInstructorStream();
-      this.showToast(isOff ? 'Camera Stopped (Standby Logo Shown)' : 'Camera Live (Video Streaming)', isOff ? 'video-slash' : 'video');
     },
 
     toggleScreenShare() {
-      this.mediaState.isScreenSharing = !this.mediaState.isScreenSharing;
-      const isSharing = this.mediaState.isScreenSharing;
-      const screenBtn = document.getElementById('roomToggleScreenBtn');
-      if (screenBtn) {
-        screenBtn.classList.toggle('active', isSharing);
-        const label = screenBtn.querySelector('.ctrl-label');
-        if (label) label.textContent = isSharing ? 'Stop Share' : 'Share Screen';
+      if (window.skillSwapConference && window.skillSwapConference.isInCall) {
+        window.skillSwapConference.toggleScreenShare();
+      } else {
+        this.mediaState.isScreenSharing = !this.mediaState.isScreenSharing;
+        this.showToast(this.mediaState.isScreenSharing ? 'Screen sharing started' : 'Screen sharing stopped', 'desktop');
       }
-      this.showToast(isSharing ? 'Screen sharing started' : 'Screen sharing stopped', 'desktop');
     },
 
     openMediaSettingsModal() {

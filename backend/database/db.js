@@ -211,6 +211,19 @@ async function initSchema() {
       status TEXT NOT NULL DEFAULT 'Confirmed',
       topic TEXT,
       code_workspace TEXT,
+      session_type TEXT DEFAULT 'ONE_ON_ONE',
+      max_capacity INTEGER DEFAULT 10,
+      rate_per_student REAL DEFAULT 1.0,
+      enrolled_count INTEGER DEFAULT 0,
+      total_earned_credits REAL DEFAULT 0.0,
+      zoom_meeting_id TEXT,
+      zoom_meeting_password TEXT,
+      zoom_join_url TEXT,
+      zoom_start_url TEXT,
+      zoom_meeting_created INTEGER DEFAULT 0,
+      meeting_started_at DATETIME,
+      meeting_ended_at DATETIME,
+      meeting_session_token TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (teacher_id) REFERENCES users(id),
       FOREIGN KEY (student_id) REFERENCES users(id)
@@ -363,6 +376,39 @@ async function initSchema() {
 
   try {
     await db.runAsync(`ALTER TABLE sessions ADD COLUMN total_earned_credits REAL DEFAULT 0.0`);
+  } catch (e) { /* column already exists */ }
+
+  // Migrations for Zoom & Real-Time Live Video Sessions
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN zoom_meeting_id TEXT`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN zoom_meeting_password TEXT`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN zoom_join_url TEXT`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN zoom_start_url TEXT`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN zoom_meeting_created INTEGER DEFAULT 0`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN meeting_started_at DATETIME`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN meeting_ended_at DATETIME`);
+  } catch (e) { /* column already exists */ }
+
+  try {
+    await db.runAsync(`ALTER TABLE sessions ADD COLUMN meeting_session_token TEXT`);
   } catch (e) { /* column already exists */ }
 }
 
