@@ -5,6 +5,7 @@
 
 const bcrypt = require('bcryptjs');
 const { db } = require('../database/db');
+const { supabaseService } = require('../database/supabase');
 const { generateToken, ROLES } = require('../middleware/auth');
 
 function getClientMeta(req) {
@@ -124,8 +125,8 @@ const authController = {
         authMethod: 'REGISTER'
       });
 
-      const newUser = await db.getAsync(`SELECT * FROM users WHERE id = ?`, [userId]);
-      newUser.badges = JSON.parse(newUser.badges_json || '[]');
+      const newUser = (await supabaseService.getUserById(userId)) || (await db.getAsync(`SELECT * FROM users WHERE id = ?`, [userId]));
+      if (newUser.badges_json && !newUser.badges) newUser.badges = JSON.parse(newUser.badges_json || '[]');
       delete newUser.password_hash;
 
       const token = generateToken(newUser);
@@ -282,8 +283,8 @@ const authController = {
         authMethod: 'PASSWORD'
       });
 
-      const updatedUser = await db.getAsync(`SELECT * FROM users WHERE id = ?`, [user.id]);
-      updatedUser.badges = JSON.parse(updatedUser.badges_json || '[]');
+      const updatedUser = (await supabaseService.getUserById(user.id)) || (await db.getAsync(`SELECT * FROM users WHERE id = ?`, [user.id]));
+      if (updatedUser.badges_json && !updatedUser.badges) updatedUser.badges = JSON.parse(updatedUser.badges_json || '[]');
       delete updatedUser.password_hash;
 
       const token = generateToken(updatedUser);
@@ -305,9 +306,11 @@ const authController = {
    */
   async getMe(req, res, next) {
     try {
+      const fullUser = (await supabaseService.getUserById(req.user.id)) || req.user;
+      delete fullUser.password_hash;
       res.json({
         success: true,
-        user: req.user
+        user: fullUser
       });
     } catch (err) {
       next(err);

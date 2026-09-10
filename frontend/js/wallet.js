@@ -33,15 +33,10 @@ class SkillSwapStore {
 
   async init() {
     try {
-      // Check stored token validity or auto-authenticate persona
-      if (!this.token) {
-        await this.autoLoginPersona(this.currentPersonaId);
-      } else {
+      if (this.token) {
         const isValid = await this.fetchMe();
         if (!isValid || !this.currentUser) {
-          console.warn('Stored JWT session expired/invalid. Auto-relogging default persona:', this.currentPersonaId);
           this.setToken(null);
-          await this.autoLoginPersona(this.currentPersonaId);
         }
       }
 
@@ -69,9 +64,15 @@ class SkillSwapStore {
     this.setToken(data.token);
     this.currentUser = data.user;
     this.currentPersonaId = data.user.id;
+    this.personas[data.user.id] = {
+      ...(this.personas[data.user.id] || {}),
+      ...data.user
+    };
     localStorage.setItem('skillswap_active_persona', data.user.id);
     sessionStorage.setItem('skillswap_logged_in', 'true');
     await this.fetchUsers();
+    await this.fetchWallet();
+    await this.fetchSessions();
     return data;
   }
 
@@ -90,6 +91,10 @@ class SkillSwapStore {
     this.setToken(data.token);
     this.currentUser = data.user;
     this.currentPersonaId = data.user.id;
+    this.personas[data.user.id] = {
+      ...(this.personas[data.user.id] || {}),
+      ...data.user
+    };
     localStorage.setItem('skillswap_active_persona', data.user.id);
     sessionStorage.setItem('skillswap_logged_in', 'true');
     await this.fetchUsers();
@@ -100,7 +105,7 @@ class SkillSwapStore {
 
   async autoLoginPersona(personaId) {
     try {
-      const email = `${personaId}@vignan.ac.in`;
+      const email = personaId.includes('@') ? personaId : (personaId === 'admin' ? 'skrao@vignan.ac.in' : `${personaId}@vignan.ac.in`);
       const res = await fetch(`${this.apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,14 +115,11 @@ class SkillSwapStore {
       if (data.success && data.token) {
         this.setToken(data.token);
         this.currentUser = data.user;
-        if (this.personas[personaId]) {
-          this.personas[personaId] = {
-            ...this.personas[personaId],
-            ...data.user,
-            login_count: data.user.login_count,
-            last_login_at: data.user.last_login_at
-          };
-        }
+        this.currentPersonaId = data.user.id;
+        this.personas[data.user.id] = {
+          ...(this.personas[data.user.id] || {}),
+          ...data.user
+        };
       }
     } catch (e) {
       console.warn('Auto-login persona note:', e.message);
@@ -133,6 +135,11 @@ class SkillSwapStore {
       const data = await res.json();
       if (data.success && data.user) {
         this.currentUser = data.user;
+        this.currentPersonaId = data.user.id;
+        this.personas[data.user.id] = {
+          ...(this.personas[data.user.id] || {}),
+          ...data.user
+        };
         return true;
       }
       return false;
@@ -179,10 +186,29 @@ class SkillSwapStore {
   }
 
   getCurrentPersona() {
-    const persona = this.personas[this.currentPersonaId] || (this.currentUser && this.currentUser.id === this.currentPersonaId ? this.currentUser : null) || this.personas['sri'] || DEFAULT_PERSONAS.sri;
-    if (this.currentUser && this.currentUser.id === persona.id) {
-      return { ...persona, ...this.currentUser, role: this.currentUser.role || persona.role || 'STUDENT' };
+    if (this.currentUser) {
+      const personaObj = this.personas[this.currentUser.id] || {};
+      const isAdm = this.currentUser.role === 'ADMIN' || this.currentUser.is_admin === 1 || personaObj.isAdmin || false;
+      const full = {
+        ...personaObj,
+        ...this.currentUser,
+        role: this.currentUser.role || (isAdm ? 'ADMIN' : 'STUDENT'),
+        isAdmin: isAdm
+      };
+      full.id = this.currentUser.id || personaObj.id || this.currentPersonaId;
+      full.name = this.currentUser.name || personaObj.name || 'User';
+      full.email = this.currentUser.email || personaObj.email || (full.id + '@vignan.ac.in');
+      full.major = this.currentUser.major || personaObj.major || 'Vignan Student';
+      full.college = this.currentUser.college || personaObj.college || 'Vignan University';
+      full.bio = this.currentUser.bio || personaObj.bio || `Student at ${full.college}`;
+      full.credits = this.currentUser.credits !== undefined ? Number(this.currentUser.credits) : (Number(personaObj.credits) || 0);
+      full.skillsOffered = this.currentUser.skillsOffered || this.currentUser.skills_offered || personaObj.skillsOffered || [];
+      full.skillsWanted = this.currentUser.skillsWanted || this.currentUser.skills_wanted || personaObj.skillsWanted || [];
+      full.certificates = this.currentUser.certificates || personaObj.certificates || [];
+      full.badges = this.currentUser.badges || personaObj.badges || (typeof this.currentUser.badges_json === 'string' ? JSON.parse(this.currentUser.badges_json) : ['Vignan Member', full.role]);
+      return full;
     }
+    const persona = this.personas[this.currentPersonaId] || this.personas['sri'] || DEFAULT_PERSONAS.sri;
     return { ...persona, role: persona.role || (persona.isAdmin ? 'ADMIN' : 'STUDENT') };
   }
 
@@ -199,7 +225,9 @@ class SkillSwapStore {
   async switchPersona(personaId) {
     this.currentPersonaId = personaId;
     localStorage.setItem('skillswap_active_persona', personaId);
+    sessionStorage.setItem('skillswap_logged_in', 'true');
     await this.autoLoginPersona(personaId);
+    await this.fetchUsers();
     await this.fetchWallet();
     await this.fetchSessions();
     return this.getCurrentPersona();
@@ -260,6 +288,12 @@ class SkillSwapStore {
       }
     } catch (e) {
       console.warn('Backend offline, using seed personas', e);
+    }
+    if (this.currentUser && this.currentUser.id) {
+      this.personas[this.currentUser.id] = {
+        ...(this.personas[this.currentUser.id] || {}),
+        ...this.currentUser
+      };
     }
     return this.personas;
   }

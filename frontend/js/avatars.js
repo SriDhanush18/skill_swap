@@ -180,7 +180,14 @@ function generateUserLogoSvg(personaId = 'sri', options = {}) {
     [bg1, bg2, bg3] = pal.bg;
     accentColor = pal.accent;
     ringColor = pal.ring;
-    initials = cleanId.slice(0, 2).toUpperCase();
+    const userObj = window.store?.personas?.[cleanId] || (window.store?.currentUser && window.store.currentUser.id === cleanId ? window.store.currentUser : null);
+    const rawName = (options.name || userObj?.name || cleanId).replace(/^usr_\d+/, '').trim() || cleanId;
+    const parts = rawName.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      initials = (parts[0][0] + parts[1][0]).toUpperCase();
+    } else {
+      initials = rawName.slice(0, 2).toUpperCase();
+    }
     symbolSvg = `
       <circle cx="50" cy="40" r="14" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5"/>
       <path d="M 28 72 C 28 58 40 54 50 54 C 60 54 72 58 72 72" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2.5" stroke-linecap="round"/>

@@ -2987,6 +2987,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         dropdownRole.textContent = role;
         dropdownRole.className = `auth-role-pill role-${role.toLowerCase()}`;
       }
+      const dropdownCredits = document.getElementById('navDropdownCredits');
+      if (dropdownCredits) {
+        dropdownCredits.textContent = `${Number(user?.credits || 0).toFixed(1)} Credits`;
+      }
 
       // Single User Auth Login Card Elements
       const authAvatar = document.getElementById('authCardUserAvatar');
