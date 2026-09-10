@@ -16,42 +16,42 @@ const KNOWN_ACCREDITED_ISSUERS = {
     officialName: 'National Programme on Technology Enhanced Learning (NPTEL & IIT Madras)',
     domain: 'nptel.ac.in',
     verifyBaseUrl: 'https://nptel.ac.in/noc/Ecertificate/?q=',
-    idPattern: /^NPTEL[0-9]{2}[A-Z]{2}[0-9]{2,4}[A-Z0-9]{4,14}$/i,
+    idPattern: /^NPTEL[0-9]{2}[A-Z]{2}[0-9]{2,4}[A-Z0-9-]{4,18}$/i,
     accreditation: 'Ministry of Education (MoE), Government of India & IIT Council'
   },
   coursera: {
     officialName: 'Coursera (Partner University / Google / DeepLearning.AI)',
     domain: 'coursera.org',
     verifyBaseUrl: 'https://coursera.org/verify/',
-    idPattern: /^(COURSERA-[A-Z0-9]{8,18}|[A-Z0-9]{12,24})$/i,
+    idPattern: /^(COURSERA-[A-Z0-9-]{6,28}|[A-Z0-9-]{10,32})$/i,
     accreditation: 'Accredited Higher Education & Industry Partners'
   },
   aws: {
     officialName: 'Amazon Web Services (AWS Training and Certification)',
     domain: 'aws.amazon.com',
     verifyBaseUrl: 'https://aws.amazon.com/verification/?id=',
-    idPattern: /^(AWS-[A-Z0-9]{3,6}-[A-Z0-9]{6,16}|[A-Z0-9]{16})$/i,
+    idPattern: /^(AWS-[A-Z0-9-]{4,28}|[A-Z0-9-]{12,32})$/i,
     accreditation: 'Amazon Web Services Global Cloud Credential Authority'
   },
   google: {
     officialName: 'Google Career Certificates / Google Cloud Credentials',
     domain: 'credential.net',
     verifyBaseUrl: 'https://www.credential.net/verify/',
-    idPattern: /^(GGL-[A-Z0-9]{4,8}-[A-Z0-9]{6,14}|[A-Z0-9]{8,16})$/i,
+    idPattern: /^(GGL-[A-Z0-9-]{4,28}|[A-Z0-9-]{8,24})$/i,
     accreditation: 'Google Certified Professional Program'
   },
   microsoft: {
     officialName: 'Microsoft Learn Certified Professional',
     domain: 'learn.microsoft.com',
     verifyBaseUrl: 'https://learn.microsoft.com/en-us/users/credentials/verify?id=',
-    idPattern: /^(MS-[A-Z0-9]{4,8}-[A-Z0-9]{6,14}|[A-Z0-9]{8,16})$/i,
+    idPattern: /^(MS-[A-Z0-9-]{4,28}|[A-Z0-9-]{8,24})$/i,
     accreditation: 'Microsoft Technical Credential Authority'
   },
   hackerrank: {
     officialName: 'HackerRank Skills Certification Authority',
     domain: 'hackerrank.com',
     verifyBaseUrl: 'https://www.hackerrank.com/certificates/',
-    idPattern: /^[a-f0-9]{12,32}$/i,
+    idPattern: /^[a-z0-9-]{10,36}$/i,
     accreditation: 'HackerRank Verified Developer Assessment'
   }
 };

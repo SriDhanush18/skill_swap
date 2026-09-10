@@ -646,9 +646,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
+      // Dynamic Custom Course / Skill Name Selector Toggle
+      const certSkillSelect = document.getElementById('certSkillSelect');
+      const certCustomSkillGroup = document.getElementById('certCustomSkillGroup');
+      const certCustomSkillInput = document.getElementById('certCustomSkillInput');
+
+      if (certSkillSelect) {
+        certSkillSelect.addEventListener('change', (e) => {
+          if (e.target.value === 'custom') {
+            if (certCustomSkillGroup) certCustomSkillGroup.style.display = 'block';
+            if (certCustomSkillInput) {
+              certCustomSkillInput.focus();
+              certCustomSkillInput.required = true;
+            }
+          } else {
+            if (certCustomSkillGroup) certCustomSkillGroup.style.display = 'none';
+            if (certCustomSkillInput) {
+              certCustomSkillInput.required = false;
+            }
+          }
+        });
+      }
+
       // Demo Quick-Fill Buttons for Instant Original vs Fake Testing
       document.getElementById('btnFillOriginalCert')?.addEventListener('click', () => {
         document.getElementById('certSkillSelect').value = 'Python Core & OOP';
+        if (certCustomSkillGroup) certCustomSkillGroup.style.display = 'none';
+        if (certCustomSkillInput) { certCustomSkillInput.value = ''; certCustomSkillInput.required = false; }
         document.getElementById('certAuthoritySelect').value = 'NPTEL (IIT Madras / Kharagpur)';
         document.getElementById('certGradeInput').value = 'Elite + Gold (94%)';
         document.getElementById('certTitleInput').value = 'Programming, Data Structures and Algorithms using Python';
@@ -680,6 +704,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       document.getElementById('btnFillFakeCert')?.addEventListener('click', () => {
         document.getElementById('certSkillSelect').value = 'Machine Learning Basics';
+        if (certCustomSkillGroup) certCustomSkillGroup.style.display = 'none';
+        if (certCustomSkillInput) { certCustomSkillInput.value = ''; certCustomSkillInput.required = false; }
         document.getElementById('certAuthoritySelect').value = 'NPTEL (IIT Madras / Kharagpur)';
         document.getElementById('certGradeInput').value = '35% (Below Passing Mark)';
         document.getElementById('certTitleInput').value = 'Machine Learning Dummy / Fake Certificate';
@@ -713,6 +739,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       document.getElementById('btnFillManualCert')?.addEventListener('click', () => {
         document.getElementById('certSkillSelect').value = 'UI/UX Design & Figma';
+        if (certCustomSkillGroup) certCustomSkillGroup.style.display = 'none';
+        if (certCustomSkillInput) { certCustomSkillInput.value = ''; certCustomSkillInput.required = false; }
         document.getElementById('certAuthoritySelect').value = 'Other / Third-Party Academy';
         document.getElementById('certGradeInput').value = 'Grade A (88%)';
         document.getElementById('certTitleInput').value = 'Advanced UI/UX Design & Figma Certificate';
@@ -747,10 +775,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const certForm = document.getElementById('uploadCertForm');
       certForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const skillName = document.getElementById('certSkillSelect').value;
+        const selectVal = document.getElementById('certSkillSelect').value;
+        const customSkillVal = document.getElementById('certCustomSkillInput')?.value.trim();
+        const skillName = (selectVal === 'custom' && customSkillVal) 
+          ? customSkillVal 
+          : (selectVal === 'custom' ? (document.getElementById('certTitleInput')?.value.trim() || 'Custom Skill Course') : (selectVal || 'Python Core & OOP'));
         const authority = document.getElementById('certAuthoritySelect').value;
         const scoreOrGrade = document.getElementById('certGradeInput').value.trim();
-        const title = document.getElementById('certTitleInput').value.trim();
+        const title = document.getElementById('certTitleInput').value.trim() || `${skillName} Certification`;
         const credentialId = document.getElementById('certIdInput').value.trim();
         const alertBox = document.getElementById('certVerificationModalAlert');
         const reportContainer = document.getElementById('certAiReportContainer');
@@ -1279,6 +1311,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (previewCard) previewCard.style.display = 'none';
       const prompt = document.getElementById('certUploadPrompt');
       if (prompt) prompt.style.display = 'block';
+
+      const certSkillSelect = document.getElementById('certSkillSelect');
+      if (certSkillSelect) certSkillSelect.value = 'Python Core & OOP';
+      const certCustomSkillGroup = document.getElementById('certCustomSkillGroup');
+      if (certCustomSkillGroup) certCustomSkillGroup.style.display = 'none';
+      const certCustomSkillInput = document.getElementById('certCustomSkillInput');
+      if (certCustomSkillInput) {
+        certCustomSkillInput.value = '';
+        certCustomSkillInput.required = false;
+      }
 
       this.openModal('uploadCertModal');
     },

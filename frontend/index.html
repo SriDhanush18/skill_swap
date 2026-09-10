@@ -1500,15 +1500,40 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
           </div>
 
           <div class="form-group">
-            <label class="form-label" for="certSkillSelect">Associated Course / Skill</label>
+            <label class="form-label" for="certSkillSelect" style="display: flex; justify-content: space-between; align-items: center;">
+              <span><i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> Associated Course / Skill</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Choose preset or enter custom</span>
+            </label>
             <select class="form-control" id="certSkillSelect" required>
-              <option value="Python Core & OOP">Python Core & OOP</option>
-              <option value="Machine Learning Basics">Machine Learning Basics</option>
-              <option value="UI/UX Design & Figma">UI/UX Design & Figma</option>
-              <option value="React.js Frontend">React.js Frontend</option>
-              <option value="SQL & Database Design">SQL & Database Design</option>
-              <option value="Cyber Security & Ethical Hacking">Cyber Security & Ethical Hacking</option>
+              <optgroup label="Popular Courses & Tech Skills">
+                <option value="Python Core & OOP">Python Core & OOP</option>
+                <option value="Machine Learning Basics">Machine Learning Basics</option>
+                <option value="UI/UX Design & Figma">UI/UX Design & Figma</option>
+                <option value="React.js Frontend">React.js Frontend</option>
+                <option value="SQL & Database Design">SQL & Database Design</option>
+                <option value="Cyber Security & Ethical Hacking">Cyber Security & Ethical Hacking</option>
+                <option value="Data Structures & Algorithms">Data Structures & Algorithms</option>
+                <option value="Full-Stack Web Development">Full-Stack Web Development</option>
+                <option value="Cloud Computing & AWS">Cloud Computing & AWS</option>
+                <option value="Java Spring Boot Backend">Java Spring Boot Backend</option>
+                <option value="Deep Learning & Neural Networks">Deep Learning & Neural Networks</option>
+                <option value="Flutter & Mobile App Development">Flutter & Mobile App Development</option>
+              </optgroup>
+              <optgroup label="Custom Course">
+                <option value="custom">✨ + Enter Custom Course / Other Skill Name...</option>
+              </optgroup>
             </select>
+          </div>
+
+          <!-- Dynamic User-Choice Custom Course Name Input -->
+          <div class="form-group" id="certCustomSkillGroup" style="display: none; background: rgba(99, 102, 241, 0.06); padding: 0.85rem; border-radius: var(--radius-md); border: 1.5px dashed rgba(99, 102, 241, 0.4);">
+            <label class="form-label" for="certCustomSkillInput" style="color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 0.45rem;">
+              <i class="fa-solid fa-pen-to-square"></i> Enter Your Choice of Course / Skill Name:
+            </label>
+            <input type="text" class="form-control" id="certCustomSkillInput" placeholder="e.g. Generative AI, Kotlin Android, Docker & Kubernetes, Rust Programming...">
+            <span style="font-size: 0.73rem; color: var(--text-muted); margin-top: 0.35rem; display: block;">
+              <i class="fa-solid fa-circle-info"></i> Enter any custom skill or course name you want to link with this verified certificate.
+            </span>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
