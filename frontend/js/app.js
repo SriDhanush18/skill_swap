@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       this.initEntrancePortal();
 
       // Check active authentication session state
-      if (!window.store.isSessionActive()) {
+      if (!window.store.isSessionActive() || window.location.hash === '#login' || window.location.hash === '#portal') {
         this.showEntrancePortal();
       } else {
         this.hideEntrancePortal();
@@ -152,6 +152,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.store.logout();
         this.showEntrancePortal();
         this.showToast('You have signed out of your dashboard.', 'check');
+      });
+
+      // Sign Out from Sidebar Navigation
+      document.getElementById('sidebarLogoutBtn')?.addEventListener('click', () => {
+        window.store.logout();
+        this.showEntrancePortal();
+        this.showToast('You have signed out. Welcome to the Login Portal.', 'user');
       });
 
       // 3. Notifications Dropdown
@@ -1705,15 +1712,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       // Navbar Triggers
-      document.getElementById('navAuthBtn')?.addEventListener('click', () => openAuth('authSignInTab'));
+      document.getElementById('navAuthBtn')?.addEventListener('click', () => {
+        this.showEntrancePortal();
+      });
 
       document.getElementById('dropdownLogoutBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         document.getElementById('personaDropdown')?.classList.remove('show');
         window.store.logout();
-        this.showToast('Signed out successfully. Switched to guest login.', 'user');
-        this.renderAll();
-        openAuth('authSignInTab');
+        this.showEntrancePortal();
+        this.showToast('Signed out successfully. Welcome to the Login Portal.', 'user');
       });
 
       document.getElementById('closeAuthModalBtn')?.addEventListener('click', closeAuth);
