@@ -70,6 +70,7 @@ class SkillSwapStore {
     this.currentUser = data.user;
     this.currentPersonaId = data.user.id;
     localStorage.setItem('skillswap_active_persona', data.user.id);
+    sessionStorage.setItem('skillswap_logged_in', 'true');
     await this.fetchUsers();
     return data;
   }
@@ -90,6 +91,7 @@ class SkillSwapStore {
     this.currentUser = data.user;
     this.currentPersonaId = data.user.id;
     localStorage.setItem('skillswap_active_persona', data.user.id);
+    sessionStorage.setItem('skillswap_logged_in', 'true');
     await this.fetchUsers();
     await this.fetchWallet();
     await this.fetchSessions();
@@ -173,7 +175,7 @@ class SkillSwapStore {
   }
 
   isSessionActive() {
-    return !!(this.token || localStorage.getItem('skillswap_active_persona') || sessionStorage.getItem('skillswap_logged_in'));
+    return sessionStorage.getItem('skillswap_logged_in') === 'true';
   }
 
   getCurrentPersona() {

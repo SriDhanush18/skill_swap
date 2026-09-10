@@ -3626,15 +3626,31 @@ body.modal-open {
 /* ENTRANCE LOGIN & REGISTRATION PORTAL STYLES & ANIMATIONS */
 /* ======================================================== */
 
+body.portal-active {
+  overflow: hidden !important;
+}
+
+body.portal-active .top-navbar,
+body.portal-active .app-container,
+body.portal-active .modal,
+body.portal-active .toast-container,
+body.portal-active .session-timer-bar {
+  display: none !important;
+}
+
 .entrance-portal-overlay {
   position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: var(--bg-base);
-  background-image: 
-    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.14) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  background-color: #f4f6fa !important;
+  background: #f4f6fa radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.12) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%) !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3643,6 +3659,13 @@ body.modal-open {
   opacity: 1;
   visibility: visible;
   transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.45s;
+}
+
+[data-theme="dark"] .entrance-portal-overlay {
+  background-color: #0d111a !important;
+  background: #0d111a radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.16) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.14) 0%, transparent 40%),
+              radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 50%) !important;
 }
 
 .entrance-portal-overlay.portal-hidden {

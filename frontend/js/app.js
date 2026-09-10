@@ -742,10 +742,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
 
     showEntrancePortal() {
+      document.body.classList.add('portal-active');
       const overlay = document.getElementById('entrancePortalOverlay');
       if (overlay) {
         overlay.classList.remove('portal-hidden');
         overlay.style.display = 'flex';
+        // Refresh persona avatar SVGs
+        const sriAvatar = document.getElementById('portalAvatarSri');
+        const rishithaAvatar = document.getElementById('portalAvatarRishitha');
+        const adminAvatar = document.getElementById('portalAvatarAdmin');
+        if (sriAvatar && window.getStudentAvatar) sriAvatar.src = window.getStudentAvatar('sri');
+        if (rishithaAvatar && window.getStudentAvatar) rishithaAvatar.src = window.getStudentAvatar('rishitha');
+        if (adminAvatar && window.getStudentAvatar) adminAvatar.src = window.getStudentAvatar('admin');
+
         // Clear any password inputs
         const pass = document.getElementById('portalLoginPassword');
         if (pass) pass.value = '';
@@ -759,6 +768,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
 
     hideEntrancePortal() {
+      document.body.classList.remove('portal-active');
       const overlay = document.getElementById('entrancePortalOverlay');
       if (overlay) {
         overlay.classList.add('portal-hidden');
