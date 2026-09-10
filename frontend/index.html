@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkillSwap | 4-Tier Merit Peer Exchange & Certification Hub (Vignan University)</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Icons via FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Vector Avatar Engine (Loaded early for zero-flicker SVG rendering) -->
+  <script src="js/avatars.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="top-navbar">
+    <div class="brand-wrapper" id="brandHomeBtn">
+      <div class="brand-icon">
+        <i class="fa-solid fa-arrows-rotate"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">SkillSwap</span>
+        <span class="brand-subtitle">Vignan University Hub</span>
+      </div>
+    </div>
+
+    <!-- Universal Search Bar with Live Search Engine -->
+    <div class="nav-search" id="navSearchContainer">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="globalSearchInput" placeholder="Search tutors & skills (Python, UI/UX, React, DSA)..." autocomplete="off" spellcheck="false">
+      <button type="button" id="globalSearchClearBtn" class="search-clear-btn" style="display: none;" title="Clear Search">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </button>
+
+      <!-- Live Search Results Dropdown Popup -->
+      <div class="nav-search-dropdown" id="globalSearchResultsDropdown" style="display: none;">
+        <!-- Populated dynamically via JS with matched tutors and skills -->
+      </div>
+    </div>
+
+    <!-- Right Controls: Supabase Status, Credits, Notifications, Persona Switcher -->
+    <div class="nav-actions">
+      <!-- Supabase Cloud Status Pill -->
+      <div class="supabase-status-pill" id="supabaseStatusBtn" title="Supabase Database Status">
+        <span class="supabase-pulse-dot"></span>
+        <span id="supabaseStatusText">⚡ Supabase Ready</span>
+      </div>
+
+      <!-- Skill Credits Pill -->
+      <div class="credit-badge-btn" id="navCreditPill" title="Your Skill Credits Balance">
+        <i class="fa-solid fa-coins credit-icon"></i>
+        <span id="navCreditCount">4.0</span> Credits
+      </div>
+
+      <!-- Auth & Role Switcher Button -->
+      <button class="nav-auth-btn" id="navAuthBtn" title="Sign In, Register, or Switch Role">
+        <i class="fa-solid fa-user-shield"></i>
+        <span id="navAuthRoleBadge" class="auth-role-pill role-mentor">MENTOR</span>
+      </button>
+
+      <!-- Notification Bell -->
+      <div class="persona-switcher-wrapper">
+        <button class="nav-icon-btn" id="notifBellBtn" title="Notifications" aria-label="Notifications">
+          <i class="fa-regular fa-bell"></i>
+          <span class="badge-counter" id="notifBadge">2</span>
+        </button>
+        <!-- Notifications Dropdown -->
+        <div class="notif-dropdown" id="notifDropdown">
+          <div class="notif-header">
+            <span>Notifications</span>
+            <button class="btn-sm btn-secondary" id="markAllReadBtn">Mark read</button>
+          </div>
+          <div class="notif-list" id="notifListContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Theme Switcher -->
+      <button class="nav-icon-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode" aria-label="Toggle theme">
+        <i class="fa-regular fa-moon" id="themeIcon"></i>
+      </button>
+
+      <!-- Single Logged-In User Profile Dashboard -->
+      <div class="persona-switcher-wrapper">
+        <div class="persona-switcher" id="personaSwitcherBtn" title="View User Profile Dashboard">
+          <img src="" alt="Avatar" class="persona-avatar" id="navUserAvatar">
+          <div class="persona-meta">
+            <span class="persona-name" id="navUserName">Sri Dhanush</span>
+            <span class="persona-role" id="navUserRole">🥇 Elite Master Tutor</span>
+          </div>
+          <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--text-muted);"></i>
+        </div>
+
+        <!-- Single User Profile Dashboard Dropdown -->
+        <div class="persona-dropdown-menu" id="personaDropdown" style="width: 310px;">
+          <!-- User Profile Summary Header -->
+          <div class="user-dashboard-profile-mini-card">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <img src="" class="persona-avatar-large" id="navDropdownAvatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.25rem;">
+                  <span id="navDropdownName" style="font-weight: 800; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sri Dhanush</span>
+                  <span id="navDropdownRoleBadge" class="auth-role-pill role-mentor" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">MENTOR</span>
+                </div>
+                <div id="navDropdownEmail" style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">sri@vignan.ac.in</div>
+                <div id="navDropdownMajor" style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem;">B.Tech CSE (3rd Year)</div>
+              </div>
+            </div>
+
+            <!-- Escrow Wallet Quick Info -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.65rem; background: var(--bg-card); padding: 0.4rem 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.78rem;">
+              <span style="color: var(--text-muted);"><i class="fa-solid fa-wallet" style="color: var(--primary);"></i> Escrow Balance:</span>
+              <strong style="color: var(--accent-emerald);" id="navDropdownCredits">3.0 Credits</strong>
+            </div>
+          </div>
+
+          <!-- User Dashboard Navigation Links -->
+          <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.35rem;">
+            <div class="persona-dropdown-action-item" id="dropdownViewProfileBtn">
+              <i class="fa-solid fa-id-badge" style="color: var(--primary);"></i>
+              <span>My Profile & DB Record</span>
+            </div>
+            <div class="persona-dropdown-action-item" id="dropdownViewWalletBtn">
+              <i class="fa-solid fa-building-columns" style="color: var(--accent-emerald);"></i>
+              <span>My Wallet & Escrow Ledger</span>
+            </div>
+            <div class="persona-dropdown-action-item" id="dropdownViewSessionsBtn">
+              <i class="fa-solid fa-video" style="color: #6366f1;"></i>
+              <span>My Live Sessions</span>
+            </div>
+            <div class="persona-dropdown-action-item" id="dropdownEditProfileBtn">
+              <i class="fa-solid fa-pen-to-square" style="color: var(--accent-amber);"></i>
+              <span>Edit Profile in Database</span>
+            </div>
+          </div>
+
+          <!-- Footer Actions -->
+          <div style="border-top: 1px solid var(--border-subtle); margin-top: 0.4rem; padding-top: 0.4rem;">
+            <div class="persona-dropdown-action-item logout" id="dropdownLogoutBtn">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+              <span>Sign Out / Switch Account</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Shell -->
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-nav-group">
+        <span class="nav-section-title">Core Exchange</span>
+        <button class="nav-item active" data-target="view-matches">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Smart Matches</span>
+          <span class="nav-item-badge">2-Way</span>
+        </button>
+        <button class="nav-item" data-target="view-explore">
+          <i class="fa-solid fa-compass"></i>
+          <span>Explore Mentors</span>
+        </button>
+        <button class="nav-item" data-target="view-quizzes">
+          <i class="fa-solid fa-award"></i>
+          <span>Skill Assessments</span>
+          <span class="nav-item-badge" style="background: var(--accent-amber-light); color: var(--accent-amber);">Quiz</span>
+        </button>
+        <button class="nav-item" data-target="view-sessions">
+          <i class="fa-regular fa-calendar-check"></i>
+          <span>My Sessions</span>
+          <span class="nav-item-badge" id="sidebarSessionBadge">1</span>
+        </button>
+        <button class="nav-item" data-target="view-room">
+          <i class="fa-solid fa-video"></i>
+          <span>Live Session Room</span>
+        </button>
+
+        <span class="nav-section-title" style="margin-top: 1rem;">Academic Support & Triage</span>
+        <button class="nav-item" data-target="view-support">
+          <i class="fa-solid fa-headset"></i>
+          <span>Support Desk</span>
+          <span class="nav-item-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669;" id="sidebarSupportBadge">2 Open</span>
+        </button>
+
+        <span class="nav-section-title" style="margin-top: 1rem;">Merit & Portfolio</span>
+        <button class="nav-item" data-target="view-profile">
+          <i class="fa-solid fa-certificate"></i>
+          <span>Certificates & Portfolio</span>
+        </button>
+        <button class="nav-item" data-target="view-wallet">
+          <i class="fa-solid fa-wallet"></i>
+          <span>Credit Wallet & Ledger</span>
+        </button>
+        <button class="nav-item" data-target="view-chat">
+          <i class="fa-regular fa-comments"></i>
+          <span>Peer Messages</span>
+        </button>
+
+        <span class="nav-section-title admin-only-section" style="margin-top: 1rem;">Administration</span>
+        <button class="nav-item admin-only-section" data-target="view-admin">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Admin & Cert Validator</span>
+        </button>
+      </div>
+
+      <!-- Sidebar Promo Card: 4 Categories -->
+      <div class="sidebar-footer-card">
+        <h4>🎖️ Upgrade Your Tutor Tier</h4>
+        <p>Score <strong>&ge;90% in Quiz</strong> or upload your <strong>NPTEL / Coursera</strong> certificate to unlock up to <strong>2.5 Credits/hr</strong>!</p>
+        <button class="btn btn-primary btn-sm" style="width: 100%;" id="sidebarUploadCertBtn">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Upload Certificate
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: SMART MATCHES (2-WAY RECIPROCAL) -->
+      <!-- ========================================== -->
+      <section class="view-section active" id="view-matches">
+        <!-- Hero Concept Banner -->
+        <div class="concept-banner">
+          <div class="concept-left">
+            <div class="concept-tag">
+              <i class="fa-solid fa-award"></i> 4-Tier Merit Peer Time-Banking
+            </div>
+            <h1 class="concept-title">Teach with Verified Excellence. Spend Credits by Tutor Tier.</h1>
+            <p class="concept-desc">
+              Tutors are categorized into <strong>4 distinct tiers</strong> based on quiz scores & verified certificates. Tutor ratings (1 to 5 Stars) are powered strictly by <strong>verified student feedback</strong>!
+            </p>
+            <div class="concept-flow">
+              <div class="flow-step">
+                <i class="fa-solid fa-graduation-cap" style="color: #60a5fa;"></i> Sri (Quiz 95% + NPTEL)
+              </div>
+              <span class="flow-arrow">➜</span>
+              <div class="flow-step">
+                <i class="fa-solid fa-coins" style="color: #fbbf24;"></i> +5.0 Credits for 2 hrs
+              </div>
+              <span class="flow-arrow">➜</span>
+              <div class="flow-step">
+                <i class="fa-brands fa-google" style="color: #f472b6;"></i> Learn from Rishitha (Google UX)
+              </div>
+            </div>
+          </div>
+          <div class="concept-actions">
+            <button class="btn btn-white" id="bannerQuickSwapBtn">
+              <i class="fa-solid fa-handshake"></i> Book Top Reciprocal Swap
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Exact Categories Showcase -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.75rem;">
+          <!-- Category 1: Bronze -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 1rem; border-radius: var(--radius-lg); border-top: 3px solid #cd7f32;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-weight: 800; font-size: 0.92rem; color: #b45309;">🥉 1. Bronze Tutor</span>
+              <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary);">1.0 Cr/hr</span>
+            </div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">
+              Passed Quiz (70% - 89%) • No External Certificate
+            </div>
+          </div>
+
+          <!-- Category 2: Silver -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 1rem; border-radius: var(--radius-lg); border-top: 3px solid #94a3b8;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-weight: 800; font-size: 0.92rem; color: #64748b;">🥈 2. Silver Tutor</span>
+              <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary);">1.5 Cr/hr</span>
+            </div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">
+              Quiz Score &ge; 90% (Distinction) • No Certificate
+            </div>
+          </div>
+
+          <!-- Category 3: Advanced -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 1rem; border-radius: var(--radius-lg); border-top: 3px solid #0ea5e9;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-weight: 800; font-size: 0.92rem; color: var(--secondary);">🎖️ 3. Advanced Tutor</span>
+              <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary);">2.0 Cr/hr</span>
+            </div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">
+              Passed Quiz + Has NPTEL / Coursera Certificate
+            </div>
+          </div>
+
+          <!-- Category 4: Elite Master -->
+          <div style="background: var(--bg-card); border: 1px solid rgba(245, 158, 11, 0.4); padding: 1rem; border-radius: var(--radius-lg); border-top: 3px solid #f59e0b; background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, var(--bg-card) 100%);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-weight: 800; font-size: 0.92rem; color: #b45309;">🥇 4. Elite Master</span>
+              <span style="font-size: 0.8rem; font-weight: 800; color: var(--primary);">2.5 Cr/hr</span>
+            </div>
+            <div style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">
+              Quiz Score &ge; 90% + NPTEL / Coursera Certificate
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Header -->
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Top Peer Matches For You</h2>
+            <p class="page-subtitle">Ranked by 2-way skill compatibility & ratings from verified student feedback</p>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-pills">
+            <button class="filter-pill active" data-match-filter="all">All Matches</button>
+            <button class="filter-pill" data-match-filter="twoway">⚡ 2-Way Reciprocal Swaps</button>
+            <button class="filter-pill" data-match-filter="credits_asc"><i class="fa-solid fa-arrow-up-1-9"></i> Low to High Credits</button>
+            <button class="filter-pill" data-match-filter="credits_desc"><i class="fa-solid fa-arrow-down-9-1"></i> High to Low Credits</button>
+            <button class="filter-pill" data-match-filter="elite">🥇 Elite Master Only</button>
+            <button class="filter-pill" data-match-filter="advanced">🎖️ Advanced Only</button>
+            <button class="filter-pill" data-match-filter="design">Design & UI/UX</button>
+            <button class="filter-pill" data-match-filter="tech">Web & Tech</button>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span style="font-size: 0.82rem; color: var(--text-secondary); font-weight: 600;">Sort By:</span>
+            <select class="form-control" id="matchesSortSelect" style="padding: 0.35rem 0.75rem; font-size: 0.82rem;">
+              <option value="compatibility">Match Compatibility (Default)</option>
+              <option value="credits_asc">Credits: Low to High (1.0 → 2.5 Cr/hr)</option>
+              <option value="credits_desc">Credits: High to Low (2.5 → 1.0 Cr/hr)</option>
+              <option value="rating">Highest Student Rating</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Dynamic Card Grid -->
+        <div class="card-grid" id="matchesCardGrid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: EXPLORE MENTORS & SKILLS -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-explore">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Explore Peer Mentors & Skill Catalogue</h2>
+            <p class="page-subtitle">Browse student mentors across Vignan University with 4 distinct merit categories and student review ratings</p>
+          </div>
+          <button class="btn btn-primary" id="exploreAddSkillBtn">
+            <i class="fa-solid fa-plus"></i> List a Course You Teach
+          </button>
+        </div>
+
+        <!-- Explore Search & Sort Controls -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center;">
+          <div style="flex: 1; min-width: 260px; position: relative;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;"></i>
+            <input type="text" id="exploreSearchInput" class="form-control" placeholder="Search mentors by name, topic, or skill (e.g. Python, Figma, Cloud, Rishitha)..." style="padding-left: 2.5rem; font-size: 0.9rem; height: 42px;">
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 700;">Sort By:</span>
+            <select class="form-control" id="exploreSortSelect" style="padding: 0.45rem 0.85rem; font-size: 0.85rem; height: 42px; min-width: 220px; font-weight: 600;">
+              <option value="credits_asc">💰 Credits: Low to High (1.0 → 2.5 Cr/hr)</option>
+              <option value="credits_desc">💎 Credits: High to Low (2.5 → 1.0 Cr/hr)</option>
+              <option value="rating">⭐ Highest Student Rating</option>
+              <option value="tier">🥇 Tutor Tier (Elite Master First)</option>
+              <option value="reviews">💬 Most Student Reviews</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Explore Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-pills">
+            <button class="filter-pill active" data-cat-filter="all">All Categories</button>
+            <button class="filter-pill" data-cat-filter="Tech">Programming & CS</button>
+            <button class="filter-pill" data-cat-filter="Design">UI/UX & Design</button>
+            <button class="filter-pill active" data-credit-filter="all" style="margin-left: 0.5rem; border-left: 1px solid var(--border-medium); padding-left: 0.75rem;">All Credit Rates</button>
+            <button class="filter-pill" data-credit-filter="low"><i class="fa-solid fa-tag" style="color:var(--accent-emerald);"></i> Budget Tutors (1.0 - 1.5 Cr)</button>
+            <button class="filter-pill" data-credit-filter="high"><i class="fa-solid fa-crown" style="color:var(--accent-amber);"></i> Premium Mentors (2.0 - 2.5 Cr)</button>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 600;">
+            <span id="exploreMentorsCountBadge" style="background: var(--bg-subtle); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm); font-weight: 700; color: var(--primary);">Showing All Mentors</span>
+          </div>
+        </div>
+
+        <!-- Mentors Grid -->
+        <div class="card-grid" id="exploreCardGrid">
+          <!-- Populated via JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: SKILL ASSESSMENTS & QUIZ CENTER -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-quizzes">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Mentor Qualification & Skill Assessment Center</h2>
+            <p class="page-subtitle">Pass a timed domain quiz (≥70%) to unlock your teaching badge. Score ≥90% to upgrade your Tutor Category!</p>
+          </div>
+          <button class="btn btn-primary" id="quizUploadCertBtn">
+            <i class="fa-solid fa-certificate"></i> Link NPTEL / Coursera Cert
+          </button>
+        </div>
+
+        <!-- Assessment Rules Callout with Negative Marking Exam Scheme -->
+        <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(14, 165, 233, 0.08)); border: 1px solid rgba(79, 70, 229, 0.2); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+          <div>
+            <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-graduation-cap"></i> 20-Question Exam Pattern & Negative Marking Rules:
+            </h4>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+              <span class="mark-badge plus">+3 Marks (Correct)</span>
+              <span class="mark-badge minus">-1 Mark (Wrong)</span>
+              <span class="mark-badge zero">0 Marks (Unattempted)</span>
+              <span class="marking-scheme-pill"><i class="fa-solid fa-bullseye"></i> Total: 60 Marks</span>
+            </div>
+            <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; max-width: 750px;">
+              🥉 <strong>Bronze Tutor (1.0 Cr/hr)</strong>: 42-53 Marks (70%-89%) + No Certificate<br>
+              🥈 <strong>Silver Tutor (1.5 Cr/hr)</strong>: &ge; 54 Marks (90%+) + No Certificate<br>
+              🎖️ <strong>Advanced Tutor (2.0 Cr/hr)</strong>: 42-53 Marks (70%-89%) + NPTEL/Coursera Certificate<br>
+              🥇 <strong>Elite Master Tutor (2.5 Cr/hr)</strong>: &ge; 54 Marks (90%+) + NPTEL/Coursera Certificate
+            </p>
+          </div>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 0.85rem 1.25rem; border-radius: var(--radius-lg); font-weight: 700; font-size: 0.85rem; text-align: right;">
+            <div>Pass Mark: <strong style="color: var(--primary);">42 / 60 (70%)</strong></div>
+            <div style="margin-top: 0.25rem;">Distinction: <strong style="color: #b45309;">54 / 60 (90%)</strong></div>
+          </div>
+        </div>
+
+        <!-- Quizzes Grid -->
+        <div class="quiz-grid" id="quizzesCardGrid">
+          <!-- Populated via JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 4: MY SESSIONS & BOOKINGS -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-sessions">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">My Swap Sessions & Group Masterclasses</h2>
+            <p class="page-subtitle">Track scheduled lessons, 1-on-1 swaps, and multi-student group cohorts where tutors earn credits scaled by attendee count ($N \times \text{Rate}$)</p>
+          </div>
+          <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+            <button class="btn btn-emerald" id="sessionsHostCohortBtn">
+              <i class="fa-solid fa-users-viewfinder"></i> Host Group Live Class (Earn N × Cr)
+            </button>
+            <button class="btn btn-secondary" id="sessionsUploadDoubtBtn">
+              <i class="fa-solid fa-headset"></i> Upload Doubt (0 Cr)
+            </button>
+            <button class="btn btn-primary" id="sessionsGoLiveBtn">
+              <i class="fa-solid fa-door-open"></i> Enter Live Session Room
+            </button>
+          </div>
+        </div>
+
+        <!-- Session Filter Toolbar -->
+        <div class="support-toolbar" style="margin-bottom: 1.25rem;">
+          <div class="support-filters" id="sessionsFilterPills">
+            <button type="button" class="filter-pill active" data-sessfilter="ALL">All Sessions</button>
+            <button type="button" class="filter-pill" data-sessfilter="ONE_ON_ONE"><i class="fa-solid fa-user"></i> 1-on-1 Swaps</button>
+            <button type="button" class="filter-pill" data-sessfilter="GROUP_COHORT"><i class="fa-solid fa-users"></i> 👥 Group Masterclasses ($N \times \text{Cr}$)</button>
+            <button type="button" class="filter-pill" data-sessfilter="CONFIRMED"><i class="fa-solid fa-clock"></i> Upcoming / Live</button>
+            <button type="button" class="filter-pill" data-sessfilter="COMPLETED"><i class="fa-solid fa-circle-check"></i> Completed</button>
+          </div>
+        </div>
+
+        <div class="session-card-grid" id="sessionsCardGrid">
+          <!-- Populated via JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 5: LIVE SESSION ROOM & COLLABORATIVE LAB -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-room">
+        <div class="page-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <span class="student-badge" style="background: rgba(99, 102, 241, 0.15); color: var(--primary); font-weight: 700;" id="liveRoomTypeBadge">
+                <i class="fa-solid fa-users"></i> Live Group Masterclass
+              </span>
+              <span class="student-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;" id="liveRoomAttendeeCountBadge">
+                <i class="fa-solid fa-user-check"></i> 3 Students Joined (N = 3)
+              </span>
+            </div>
+            <h2 class="page-title" id="liveRoomTitleDisplay">Interactive Live Classroom & Multi-Student Lab</h2>
+            <p class="page-subtitle" id="liveRoomSubtitleDisplay">Real-time collaborative code editor, student roster, and dynamic tutor credit pooling ($N \times \text{Fee}$)</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="resetRoomEditorBtn">
+              <i class="fa-solid fa-arrow-rotate-left"></i> Reset Code
+            </button>
+            <button class="btn btn-emerald" id="completeSessionBtn">
+              <i class="fa-solid fa-coins"></i> Conclude Masterclass & Claim All N × Credits
+            </button>
+            <button class="btn btn-primary" id="enrollLiveRoomCohortBtn" style="display: none;">
+              <i class="fa-solid fa-user-plus"></i> Enroll in Masterclass
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Session Container -->
+        <div class="session-room-container">
+          <!-- Main Stage -->
+          <div class="session-main-stage">
+            <div class="session-stage-header">
+              <div class="session-badge-active" id="liveRoomStageBadge">
+                <span class="live-pulse"></span>
+                <span id="liveRoomStageTitle">LIVE MASTERCLASS: Python Programming & Algorithms</span>
+              </div>
+              <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <div class="session-bounty-ticker" id="liveRoomCohortBountyDisplay" style="font-size: 0.85rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 0.3rem 0.75rem; border-radius: var(--radius-full);">
+                  <i class="fa-solid fa-coins"></i> Tutor Pool: +3.0 Credits (3 Students × 1.0 Cr)
+                </div>
+                <div class="session-timer-display" id="sessionTimerDisplay">
+                  01:42:18 REMAINING
+                </div>
+              </div>
+            </div>
+
+            <!-- Video Grid: Tutor Podium + Multi-Student Attendee Grid -->
+            <div class="video-grid-mock" id="liveRoomVideoGrid">
+              <!-- Instructor Podium with Live Video Stream -->
+              <div class="video-box instructor-podium" style="border: 2px solid var(--primary); position: relative;">
+                <!-- Live Video Elements (Displayed instead of static logo) -->
+                <video id="liveRoomInstructorVideo" class="room-video-feed" autoplay playsinline muted style="display: block;"></video>
+                <canvas id="liveRoomInstructorCanvas" class="room-video-feed" style="display: none;"></canvas>
+
+                <!-- Standby Avatar (Shown only if camera is explicitly turned off) -->
+                <div class="video-avatar-holder" id="liveRoomInstructorAvatarHolder" style="display: none;">
+                  <img src="" alt="Instructor" id="liveRoomInstructorAvatar" style="width: 68px; height: 68px; border-radius: 50%;">
+                  <div style="font-weight: 700; font-size: 0.88rem;" id="liveRoomInstructorName">Sri Dhanush (Host Tutor)</div>
+                  <div style="font-size: 0.75rem; color: #60a5fa;" id="liveRoomInstructorTier">🥇 Elite Master Tutor • 1.0 Cr / student</div>
+                  <div style="font-size: 0.72rem; color: #ef4444; font-weight: 700; margin-top: 0.25rem;"><i class="fa-solid fa-video-slash"></i> Camera Off</div>
+                </div>
+
+                <!-- Video Overlays -->
+                <div class="video-live-badge"><span class="status-dot-green"></span> <span id="liveRoomInstructorResTag">1080p 60FPS</span></div>
+                <div class="video-name-tag"><i class="fa-solid fa-chalkboard-user"></i> <span id="liveRoomInstructorTag">Sri Dhanush (Lead Instructor)</span></div>
+                <div class="video-status-mic"><i class="fa-solid fa-microphone"></i></div>
+              </div>
+
+              <!-- Multi-Student Attendees Dynamic Tiles -->
+              <div id="liveRoomAttendeesGrid" style="display: contents;">
+                <!-- Populated via JS with active live video feeds for all N attending students -->
+              </div>
+            </div>
+
+            <!-- Interactive In-Room Live Audio & Video Controls Bar -->
+            <div class="live-media-control-bar" id="liveRoomMediaControlBar">
+              <div class="media-controls-group">
+                <!-- Microphone Toggle -->
+                <button type="button" class="media-ctrl-btn active" id="roomToggleMicBtn" title="Toggle Microphone (Mute / Unmute)">
+                  <i class="fa-solid fa-microphone"></i>
+                  <span class="ctrl-label" id="roomMicBtnLabel">Mute</span>
+                </button>
+
+                <!-- Camera Toggle -->
+                <button type="button" class="media-ctrl-btn active" id="roomToggleCamBtn" title="Toggle Camera (Video On / Off)">
+                  <i class="fa-solid fa-video"></i>
+                  <span class="ctrl-label" id="roomCamBtnLabel">Stop Video</span>
+                </button>
+
+                <!-- Screen Share Toggle -->
+                <button type="button" class="media-ctrl-btn" id="roomToggleScreenBtn" title="Share Screen">
+                  <i class="fa-solid fa-desktop"></i>
+                  <span class="ctrl-label">Share Screen</span>
+                </button>
+              </div>
+
+              <!-- Live Audio Level & Output -->
+              <div class="media-status-group">
+                <div class="live-audio-indicator" title="Live Microphone Input Level">
+                  <i class="fa-solid fa-waveform" style="color: var(--accent-emerald);"></i>
+                  <div class="audio-wave-bars">
+                    <span class="bar bar-1"></span>
+                    <span class="bar bar-2"></span>
+                    <span class="bar bar-3"></span>
+                    <span class="bar bar-4"></span>
+                  </div>
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-emerald);" id="liveMicStatusText">Mic Live</span>
+                </div>
+                <div class="live-video-badge" id="liveCamStatusBadge">
+                  <span class="status-dot-green"></span>
+                  <span id="liveCamStatusText" style="font-size: 0.75rem; font-weight: 600;">HD 1080p Video</span>
+                </div>
+              </div>
+
+              <div class="media-controls-group">
+                <!-- Audio & Video Settings Button -->
+                <button type="button" class="media-ctrl-btn settings-btn" id="roomMediaSettingsBtn" title="Audio & Video Settings">
+                  <i class="fa-solid fa-sliders"></i>
+                  <span class="ctrl-label">AV Settings</span>
+                </button>
+
+                <!-- Test Audio Quick Button -->
+                <button type="button" class="media-ctrl-btn" id="roomQuickSpeakerTestBtn" title="Test Speakers">
+                  <i class="fa-solid fa-volume-high"></i>
+                  <span class="ctrl-label">Test Audio</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Collaborative Code Workspace -->
+            <div class="collab-editor-box">
+              <div class="collab-tabs">
+                <div class="collab-tab active"><i class="fa-solid fa-code"></i> Shared Multi-Student Code Workspace</div>
+                <div class="collab-tab"><i class="fa-regular fa-clipboard"></i> Cohort Syllabus & Interactive Notes</div>
+              </div>
+              <textarea class="collab-textarea" id="liveRoomCodeEditor" spellcheck="false">
+/* =========================================================
+ * Live Collaborative Masterclass Workspace
+ * Course: Python Programming & DSA | Multi-Student Cohort
+ * Rule: 1 attending student = +1 Credit added to tutor!
+ * ========================================================= */
+
+// Live Interactive Coding Exercise with attending students:
+function solveMultiStudentBounty(studentsCount) {
+  const feePerStudent = 1.0; // 1 Credit per attending student
+  const totalTutorEarnings = studentsCount * feePerStudent;
+  return {
+    studentsAttended: studentsCount,
+    creditsPerStudent: feePerStudent + " Credit",
+    totalTutorCreditsAdded: totalTutorEarnings + " Credits"
+  };
+}
+
+console.log("Welcome students! Tutor earns 1 credit for each student who attends.");
+</textarea>
+            </div>
+          </div>
+
+          <!-- Session Sidebar -->
+          <div class="session-sidebar">
+            <div>
+              <!-- Enrolled Students Roster -->
+              <div class="session-agenda" style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <h4 style="margin-bottom: 0;"><i class="fa-solid fa-users" style="color: var(--primary);"></i> Student Roster (N)</h4>
+                  <span style="font-size: 0.75rem; font-weight: 700; color: var(--accent-emerald);" id="liveRoomRosterCount">3 Enrolled</span>
+                </div>
+                <div id="liveRoomAttendeeList" style="display: flex; flex-direction: column; gap: 0.4rem; max-height: 160px; overflow-y: auto;">
+                  <!-- Populated via JS -->
+                </div>
+              </div>
+
+              <!-- Session Syllabus -->
+              <div class="session-agenda">
+                <h4><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Masterclass Agenda</h4>
+                <div class="agenda-items">
+                  <div class="agenda-item"><i class="fa-regular fa-circle-check" style="color: var(--accent-emerald);"></i> 1. Core Architecture & Theory</div>
+                  <div class="agenda-item"><i class="fa-regular fa-circle-check" style="color: var(--accent-emerald);"></i> 2. Hands-on Live Coding Demo</div>
+                  <div class="agenda-item"><i class="fa-regular fa-circle-dot" style="color: var(--accent-amber);"></i> 3. Group Problem Solving & Debugging</div>
+                  <div class="agenda-item"><i class="fa-regular fa-circle" style="color: var(--text-muted);"></i> 4. Student Q&A & Certificate Assessment</div>
+                </div>
+              </div>
+
+              <!-- Multi-Student Escrow & Payout Pool Calculation Box -->
+              <div class="escrow-locked-box" id="liveRoomEscrowBox">
+                <h5><i class="fa-solid fa-coins"></i> Scaled Tutor Earnings (1 Cr / Student)</h5>
+                <p id="liveRoomEscrowCalculationText">
+                  <strong>3 Students $\times$ 1.0 Credit = 3.0 Credits</strong> held in escrow (1 student = 1 credit added). Released directly to the tutor upon conclusion.
+                </p>
+              </div>
+            </div>
+
+            <div class="session-complete-box">
+              <button class="btn btn-emerald" style="width: 100%;" id="sidebarCompleteSessionBtn">
+                <i class="fa-solid fa-coins"></i> Complete & Claim All N × Credits
+              </button>
+              <button class="btn btn-secondary btn-sm" style="width: 100%; margin-top: 0.4rem;" id="roomUploadDoubtBtn">
+                <i class="fa-solid fa-headset"></i> Upload Doubt to Support Desk (0 Cr)
+              </button>
+              <button class="btn btn-secondary btn-sm" style="width: 100%;" id="reportDisputeBtn">
+                <i class="fa-solid fa-flag"></i> Report Session Issue / Help
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW: ACADEMIC SUPPORT DESK & TRIAGE -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-support">
+        <div class="page-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <span class="student-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">
+                <i class="fa-solid fa-headset"></i> Academic Support Team
+              </span>
+              <h2 class="page-title" style="margin-bottom: 0;">Support Team & Doubt Classification Hub</h2>
+            </div>
+            <p class="page-subtitle">
+              Students get <strong>free 0-credit support</strong> for code debugging & course doubts after attending sessions. Mentors classify issues and earn <strong>+1.0 to +2.0 Skill Credits</strong> per triage!
+            </p>
+          </div>
+          <button class="btn btn-primary" id="openCreateSupportTicketBtn">
+            <i class="fa-solid fa-plus-circle"></i> Ask Doubt / Submit Bug (0 Cr)
+          </button>
+        </div>
+
+        <!-- Support KPI Metrics -->
+        <div class="wallet-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper available" style="background: rgba(245, 158, 11, 0.15); color: #d97706;">
+              <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Open Doubts (Waiting Triage)</h4>
+              <div class="stat-value" id="supportOpenCount">2 Doubts</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper earned" style="background: rgba(16, 185, 129, 0.15); color: #059669;">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Resolved & Classified</h4>
+              <div class="stat-value" id="supportResolvedCount">1 Solved</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper escrow">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Mentor Rewards Distributed</h4>
+              <div class="stat-value" id="supportTotalRewards">4.5 Cr</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper spent" style="background: rgba(99, 102, 241, 0.15); color: var(--primary);">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Student Cost</h4>
+              <div class="stat-value" style="color: var(--accent-emerald);">0.0 Cr (Free)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="support-toolbar">
+          <div class="support-filters" id="supportFilterPills">
+            <button type="button" class="filter-pill active" data-supportfilter="ALL">All Doubts</button>
+            <button type="button" class="filter-pill" data-supportfilter="CODE_BUG"><i class="fa-solid fa-bug"></i> Code Bugs</button>
+            <button type="button" class="filter-pill" data-supportfilter="CONCEPT_DOUBT"><i class="fa-solid fa-lightbulb"></i> Concepts</button>
+            <button type="button" class="filter-pill" data-supportfilter="ARCH_DESIGN"><i class="fa-solid fa-cubes"></i> Architecture</button>
+            <button type="button" class="filter-pill" data-supportfilter="OPEN"><i class="fa-solid fa-clock"></i> Open Only</button>
+            <button type="button" class="filter-pill" data-supportfilter="RESOLVED"><i class="fa-solid fa-circle-check"></i> Resolved</button>
+            <button type="button" class="filter-pill" data-supportfilter="MINE"><i class="fa-solid fa-user"></i> My Doubts / Tasks</button>
+          </div>
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" class="form-control" id="supportSearchInput" placeholder="Search by topic, skill, or keyword..." style="max-width: 280px;">
+          </div>
+        </div>
+
+        <!-- Support Tickets Grid -->
+        <div class="support-tickets-grid" id="supportTicketsCardGrid">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 6: CREDIT WALLET & TRANSACTION LEDGER -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-wallet">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Skill Credit Wallet & Ledger</h2>
+            <p class="page-subtitle">Your time-banking balance, active escrow holds, and tiered credit transactions in Supabase / PostgreSQL</p>
+          </div>
+          <button class="btn btn-primary" id="walletEarnMoreBtn">
+            <i class="fa-solid fa-bolt"></i> Teach a Peer to Earn Credits
+          </button>
+        </div>
+
+        <!-- Wallet Stats Grid -->
+        <div class="wallet-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper available">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Available Credits</h4>
+              <div class="stat-value" id="walletAvailableBalance">4.0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper escrow">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Held in Escrow</h4>
+              <div class="stat-value" id="walletEscrowBalance">0.0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper earned">
+              <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Lifetime Earned</h4>
+              <div class="stat-value" id="walletLifetimeEarned">8.0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper spent">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Lifetime Learned</h4>
+              <div class="stat-value" id="walletLifetimeSpent">4.0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transaction Audit Ledger -->
+        <div class="page-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.2rem;">Transaction Audit Log (Supabase PostgreSQL)</h3>
+            <span style="font-size: 0.82rem; color: var(--text-muted);" id="walletLedgerSubtitle">Personalized Audit Log for Sri Dhanush — Tiered Hourly Rates Ledger Entries</span>
+          </div>
+          <span class="student-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">
+            <i class="fa-solid fa-lock"></i> User Scoped Ledger
+          </span>
+        </div>
+
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Transaction ID</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Student / Peer</th>
+                <th>Credits Impact</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="walletLedgerTableBody">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 7: PEER MESSENGER & CHAT -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-chat">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Peer-to-Peer Messaging</h2>
+            <p class="page-subtitle">Coordinate swaps, compare NPTEL / Coursera syllabi, and propose custom swap hours</p>
+          </div>
+        </div>
+
+        <div class="chat-layout">
+          <!-- Chat Sidebar Contacts -->
+          <div class="chat-sidebar">
+            <div class="chat-list-header">
+              <span>Active Conversations</span>
+            </div>
+            <div class="chat-contacts-list" id="chatContactsList">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <!-- Chat Window -->
+          <div class="chat-window">
+            <div class="chat-window-header">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <img src="" alt="Avatar" class="persona-avatar" id="activeChatAvatar">
+                <div>
+                  <h4 id="activeChatName" style="font-size: 0.95rem; font-weight: 700;">Rishitha</h4>
+                  <span style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 600;">● Online • 🥇 Elite Master Tutor (2.5 Cr/hr)</span>
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-secondary btn-sm" id="chatScheduleSwapBtn">
+                  <i class="fa-regular fa-calendar-plus"></i> Propose Swap
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages Area -->
+            <div class="chat-messages-area" id="chatMessagesContainer">
+              <!-- Populated via JS -->
+            </div>
+
+            <!-- Input Bar -->
+            <form class="chat-input-bar" id="chatForm">
+              <input type="text" id="chatMessageInput" placeholder="Type a message (e.g. Let's do a 2-hour swap of Python OOP for Figma tokens)..." autocomplete="off">
+              <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.25rem;">
+                <i class="fa-solid fa-paper-plane"></i> Send
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 8: MY PROFILE, CERTIFICATES & MERIT -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-profile">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">My Skill Portfolio & 4-Tier Merit Rating</h2>
+            <p class="page-subtitle">Manage your verified NPTEL / Coursera credentials, tutor category ratings, and student feedback</p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary" id="profileEditDbDetailsBtn">
+              <i class="fa-solid fa-user-pen"></i> Edit & Store Details in DB
+            </button>
+            <button class="btn btn-emerald" id="profileUploadCertBtn">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Upload NPTEL / Coursera Cert
+            </button>
+            <button class="btn btn-primary" id="profileAddSkillBtn">
+              <i class="fa-solid fa-plus"></i> Add New Course
+            </button>
+          </div>
+        </div>
+
+        <!-- Profile Overview Card -->
+        <div class="profile-overview-card">
+          <img src="" alt="Profile" class="profile-avatar-large" id="profileCardAvatar">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <h2 style="font-size: 1.5rem; font-weight: 800;" id="profileCardName">Sri Dhanush</h2>
+              <span class="student-badge" style="background: rgba(245, 158, 11, 0.15); color: #b45309; border-color: rgba(245, 158, 11, 0.4);"><i class="fa-solid fa-medal"></i> 🥇 Elite Master Tutor</span>
+              <span class="student-badge" style="background: var(--primary-light); color: var(--primary);"><i class="fa-solid fa-building-columns"></i> Vignan University</span>
+            </div>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0.4rem 0;" id="profileCardMajor">B.Tech CSE (3rd Year, 1st Sem)</p>
+            <p style="font-size: 0.9rem; color: var(--text-primary); max-width: 780px; line-height: 1.5;" id="profileCardBio">
+              B.Tech CSE student at Vignan. NPTEL Elite+Gold (94%) certified in Python. Passionate about Machine Learning & OOP. Swapping for UI/UX Figma and React frontend.
+            </p>
+            <div class="profile-badge-row" id="profileBadgeContainer">
+              <!-- Populated via JS -->
+            </div>
+
+            <!-- Database Storage & Login Record Status Strip -->
+            <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 0.85rem; flex-wrap: wrap; background: var(--bg-subtle); padding: 0.5rem 0.85rem; border-radius: var(--radius-md); font-size: 0.76rem; border: 1px solid var(--border-subtle);">
+              <span style="color: var(--accent-emerald); font-weight: 700;"><i class="fa-solid fa-database"></i> Stored in Database: <span id="profileCardDbStatus">SQLite / Supabase Synced</span></span>
+              <span style="color: var(--text-muted);">|</span>
+              <span><strong>User ID:</strong> <code id="profileCardUserId" style="font-weight: 700; color: var(--primary);">sri</code></span>
+              <span style="color: var(--text-muted);">|</span>
+              <span><strong>Total Logins:</strong> <strong id="profileCardLoginCount">1 Login</strong></span>
+              <span style="color: var(--text-muted);">|</span>
+              <span><strong>Last Login:</strong> <span id="profileCardLastLogin">Just now</span></span>
+              <span style="color: var(--text-muted);">|</span>
+              <span><strong>Role in DB:</strong> <span class="auth-role-pill role-mentor" id="profileCardRolePill" style="font-size: 0.68rem; padding: 0.1rem 0.4rem;">MENTOR</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Verified Certificates Showcase Grid -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-certificate" style="color: #f59e0b;"></i> Verified External Academic Credentials
+              </h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0;">Authorized certificates verified by Academic AI & Faculty. Unlocks <strong>Advanced (2.0 Cr)</strong> or <strong>Elite Master (2.5 Cr)</strong> tiers and awards <strong>+2.0 Skill Credits</strong>.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-emerald btn-sm" id="profileVerifyCertCtaBtn">
+                <i class="fa-solid fa-stamp"></i> Submit Certificate to Verify (Original vs Fake)
+              </button>
+              <button class="btn btn-secondary btn-sm" id="profileCertSectionAddBtn">+ Link Certificate</button>
+            </div>
+          </div>
+
+          <div id="profileCertificatesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Skills Dual Column Layout -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+          <!-- Skills Offered -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-graduation-cap" style="color: var(--primary);"></i> Courses I Teach (With 4-Tier Rates)
+              </h3>
+              <button class="btn btn-secondary btn-sm" id="profileAddTeachBtn">+ Add</button>
+            </div>
+            <div id="profileSkillsOfferedList" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <!-- Skills Wanted -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-bullseye" style="color: var(--accent-amber);"></i> Skills I Want to Learn
+              </h3>
+              <button class="btn btn-secondary btn-sm" id="profileAddLearnBtn">+ Add</button>
+            </div>
+            <div id="profileSkillsWantedList" style="display: flex; flex-direction: column; gap: 0.85rem;">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Received Peer Reviews (Rating strictly from student feedback) -->
+        <div class="page-header" style="margin-bottom: 1rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 800;">Student Reviews & Feedback Ratings</h3>
+          <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;" id="profileReviewsStats">⭐ 4.95 Rating (based on 14 verified student reviews)</span>
+        </div>
+
+        <div id="profileReviewsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- AI Dynamic Assessment & Skill Qualification Records (Stored in Database) -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; margin-top: 1rem; margin-bottom: 1.5rem;">
+          <div class="page-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                <i class="fa-solid fa-graduation-cap" style="color: var(--accent-indigo);"></i> AI Dynamic Assessment & Qualification Records
+              </h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0;" id="profileQuizAttemptsSubtitle">
+                Verified Skill Evaluations & Negative Marking Test Records stored in Database
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="student-badge" style="background: rgba(99, 102, 241, 0.15); color: #6366f1; font-weight: 700;">
+                <i class="fa-solid fa-database"></i> Database Stored (quiz_attempts)
+              </span>
+              <button class="btn btn-secondary btn-sm" id="refreshProfileQuizAttemptsBtn" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">
+                <i class="fa-solid fa-arrows-rotate"></i> Refresh Tests
+              </button>
+            </div>
+          </div>
+
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Attempt Date</th>
+                  <th>Skill / Course Domain</th>
+                  <th>Questions</th>
+                  <th>Marks Breakdown (+3 / -1 / 0)</th>
+                  <th>Total Marks</th>
+                  <th>Score %</th>
+                  <th>Outcome & Tutor Tier</th>
+                </tr>
+              </thead>
+              <tbody id="profileQuizAttemptsTableBody">
+                <!-- Populated via JS strictly for this profile from quiz_attempts table -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Profile-Isolated Transaction Audit Log (Supabase PostgreSQL) -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; margin-top: 1rem;">
+          <div class="page-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                <i class="fa-solid fa-receipt" style="color: var(--primary);"></i> Transaction Audit Log (Supabase PostgreSQL)
+              </h3>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0;" id="profileLedgerSubtitle">
+                Personalized Audit Trail for Sri Dhanush — Immutable Ledger in Supabase PostgreSQL
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="student-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700;">
+                <i class="fa-solid fa-shield-halved"></i> Profile-Isolated Ledger
+              </span>
+              <button class="btn btn-secondary btn-sm" id="refreshProfileLedgerBtn" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">
+                <i class="fa-solid fa-arrows-rotate"></i> Refresh Audit
+              </button>
+            </div>
+          </div>
+
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Transaction ID</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Student / Peer</th>
+                  <th>Credits Impact</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="profileLedgerTableBody">
+                <!-- Populated via JS strictly for this profile -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VIEW 9: ADMIN & CERTIFICATE VALIDATOR -->
+      <!-- ========================================== -->
+      <section class="view-section" id="view-admin">
+        <div class="page-header">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <span class="admin-badge"><i class="fa-solid fa-shield"></i> University Administration</span>
+              <h2 class="page-title" style="margin-bottom: 0;">Faculty Certificate Validator & Hub Analytics</h2>
+            </div>
+            <p class="page-subtitle">Dr. S. K. Rao's portal for validating NPTEL / Coursera credentials and regulating tiered credit rates</p>
+          </div>
+        </div>
+
+        <!-- Admin KPI Metrics -->
+        <div class="wallet-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper available">
+              <i class="fa-solid fa-certificate"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Verified Certifications</h4>
+              <div class="stat-value">6 NPTEL/Coursera</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper escrow">
+              <i class="fa-solid fa-award"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Elite Tutors (2.5 Cr)</h4>
+              <div class="stat-value">3 Students</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper earned">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Credits in Flow</h4>
+              <div class="stat-value">24.0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrapper spent">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div class="stat-content">
+              <h4>Active Students</h4>
+              <div class="stat-value">5 Registered</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certificate Approval Queue -->
+        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: 1.5rem; margin-bottom: 2rem;">
+          <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-stamp" style="color: var(--primary);"></i> Pending NPTEL / Coursera Verification Queue
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <div style="background: var(--bg-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem;">Sri Dhanush (221FA04001) - NPTEL Python Programming & DSA</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Roll No: NPTEL23CS108S4491028 • Score: Elite + Gold (94%) • Quiz: 95%</div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="student-badge" style="background: var(--accent-emerald-light); color: var(--accent-emerald);">✓ Verified: 🥇 Elite Master (2.5 Cr/hr)</span>
+              </div>
+            </div>
+
+            <div style="background: var(--bg-subtle); padding: 1rem 1.25rem; border-radius: var(--radius-lg); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+              <div>
+                <div style="font-weight: 800; font-size: 0.95rem;">Rishitha (221FA05012) - Google UX Design Professional Certificate</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Coursera Credential: GGL-UX-9912048 • Distinction • Quiz: 98%</div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <span class="student-badge" style="background: var(--accent-emerald-light); color: var(--accent-emerald);">✓ Verified: 🥇 Elite Master (2.5 Cr/hr)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CREATE SUPPORT TICKET (0 CR COST) -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="createSupportTicketModal">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-headset" style="color: #10b981;"></i> Submit Doubt to Support Team (0 Cr)</h3>
+        <div class="modal-close" id="closeCreateSupportTicketModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="createSupportTicketForm">
+        <div class="modal-body" style="gap: 0.9rem;">
+          <div class="support-modal-notice">
+            <i class="fa-solid fa-shield-halved" style="color: var(--accent-emerald); font-size: 1.1rem;"></i>
+            <div>
+              <strong>Verified Student Support:</strong> As long as you have attended a course session or hold prior certification/quiz credentials in the subject, you can request <strong>unlimited free support (0 Credits)</strong>.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supportSkillSelect">Select Subject / Course</label>
+            <select class="form-control" id="supportSkillSelect" required>
+              <option value="Python Programming & DSA">Python Programming & DSA</option>
+              <option value="UI/UX Design & Figma">UI/UX Design & Figma</option>
+              <option value="React.js Frontend & State Architecture">React.js Frontend & State Architecture</option>
+              <option value="Database Systems & Composite Indexing">Database Systems & Composite Indexing</option>
+              <option value="Machine Learning & Deep Learning">Machine Learning & Deep Learning</option>
+              <option value="Cyber Security & Ethical Hacking">Cyber Security & Ethical Hacking</option>
+            </select>
+          </div>
+
+          <!-- Real-time Verification Box -->
+          <div id="supportEligibilityStatusBox" class="eligibility-status-box">
+            <i class="fa-solid fa-spinner fa-spin"></i> Checking course attendance records...
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="supportTitleInput">Doubt / Bug Title</label>
+              <input type="text" class="form-control" id="supportTitleInput" placeholder="e.g. Recursion depth error in quicksort partition" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="supportIssueTypeSelect">Classification Category</label>
+              <select class="form-control" id="supportIssueTypeSelect">
+                <option value="CODE_BUG">🐞 Code Bug / Error</option>
+                <option value="CONCEPT_DOUBT">💡 Conceptual Doubt</option>
+                <option value="ARCH_DESIGN">🏗️ Architecture Review</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supportDescriptionInput">Explain the Issue & What You Tried</label>
+            <textarea class="form-control" id="supportDescriptionInput" rows="3" placeholder="Describe the error, expected behavior, and where you're stuck..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supportCodeInput">Code Snippet / Error Stack Trace (Optional)</label>
+            <textarea class="form-control" id="supportCodeInput" rows="4" style="font-family: monospace; font-size: 0.85rem;" placeholder="Paste your code snippet or error logs here..."></textarea>
+          </div>
+
+          <!-- Attachment & Error Screenshot Upload Dropzone -->
+          <div class="form-group">
+            <label class="form-label">
+              <i class="fa-solid fa-paperclip" style="color: var(--primary);"></i> Upload Error Screenshot / Code File (Optional)
+            </label>
+            <div class="support-upload-dropzone" id="supportDropzone" style="border: 2px dashed var(--border-medium); border-radius: var(--radius-md); padding: 1rem; text-align: center; background: var(--bg-subtle); cursor: pointer; transition: var(--transition-fast);">
+              <input type="file" id="supportAttachmentInput" accept="image/*,.py,.js,.html,.css,.sql,.java,.cpp,.txt,.json,.log" style="display: none;">
+              <div id="supportUploadPrompt">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.6rem; color: var(--primary); margin-bottom: 0.35rem;"></i>
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Click or drag & drop screenshot / code file here</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem;">Supports PNG, JPG, WebP screenshots or .py, .js, .sql, .txt source files (max 5MB)</div>
+              </div>
+              <!-- Preview Card -->
+              <div id="supportAttachmentPreview" style="display: none; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 0.5rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-top: 0.4rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem; overflow: hidden;">
+                  <img id="supportAttachmentImgPreview" src="" alt="Screenshot" style="width: 44px; height: 44px; border-radius: 4px; object-fit: cover; display: none;">
+                  <i id="supportAttachmentFileIcon" class="fa-solid fa-file-code" style="font-size: 1.5rem; color: var(--primary);"></i>
+                  <div style="text-align: left; overflow: hidden;">
+                    <div id="supportAttachmentFileName" style="font-weight: 700; font-size: 0.82rem; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">screenshot.png</div>
+                    <div id="supportAttachmentFileSize" style="font-size: 0.7rem; color: var(--text-muted);">120 KB</div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="removeSupportAttachmentBtn" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--accent-rose);">
+                  <i class="fa-solid fa-trash-can"></i> Remove
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="support-cost-summary">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Student Cost:</span>
+              <strong style="color: var(--accent-emerald); font-size: 1.05rem;">0.0 Credits (Free Support)</strong>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Mentor reward (+1.0 to +2.0 Cr) is fully sponsored by the University Academic Peer Pool.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelCreateSupportTicketBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submitSupportTicketBtn">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Doubt to Support Desk (0 Cr)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: MENTOR CLASSIFY & RESOLVE DOUBT -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="resolveSupportModal">
+    <div class="modal-content" style="max-width: 720px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-screwdriver-wrench" style="color: var(--primary);"></i> Mentor Triage & Solution</h3>
+        <div class="modal-close" id="closeResolveSupportModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="resolveSupportForm">
+        <div class="modal-body" style="gap: 0.9rem;">
+          <input type="hidden" id="resolveTicketId">
+
+          <!-- Ticket Summary Card -->
+          <div class="support-ticket-summary-card" id="resolveTicketSummary">
+            <!-- Populated via JS -->
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 700;">
+              Classify Problem Complexity & Earn Credit Reward:
+            </label>
+            <div class="support-complexity-grid">
+              <label class="complexity-option active" data-bounty="1.0" data-level="Level 1: Syntax / Typo / Quick Debug">
+                <input type="radio" name="supportComplexityRadio" value="Level 1: Syntax / Typo / Quick Debug" checked>
+                <div class="complexity-title">Level 1: Syntax / Typo</div>
+                <div class="complexity-bounty">+1.0 Credit</div>
+                <div class="complexity-desc">Quick typo, syntax error, import fixes.</div>
+              </label>
+              <label class="complexity-option" data-bounty="1.5" data-level="Level 2: Logic / State / Edge Case">
+                <input type="radio" name="supportComplexityRadio" value="Level 2: Logic / State / Edge Case">
+                <div class="complexity-title">Level 2: Logic / State</div>
+                <div class="complexity-bounty">+1.5 Credits</div>
+                <div class="complexity-desc">Algorithmic flaws, state loops, edge cases.</div>
+              </label>
+              <label class="complexity-option" data-bounty="2.0" data-level="Level 3: Architectural / Optimization / Security">
+                <input type="radio" name="supportComplexityRadio" value="Level 3: Architectural / Optimization / Security">
+                <div class="complexity-title">Level 3: Architecture</div>
+                <div class="complexity-bounty">+2.0 Credits</div>
+                <div class="complexity-desc">System design, database indexing, refactor.</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="resolveSolutionInput">Detailed Solution, Explanation & Debugged Code</label>
+            <textarea class="form-control" id="resolveSolutionInput" rows="5" placeholder="Explain the root cause and provide the corrected code snippet or architectural guidance..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="resolveRecommendedQuizSelect">Recommend Follow-Up AI Assessment Quiz for Student</label>
+            <select class="form-control" id="resolveRecommendedQuizSelect">
+              <option value="Python Programming & DSA">Python Programming & DSA (20 Questions)</option>
+              <option value="React.js Frontend & State Architecture">React.js Frontend & State Architecture (20 Questions)</option>
+              <option value="Database Systems & Composite Indexing">Database Systems & Composite Indexing (20 Questions)</option>
+              <option value="UI/UX Design & Figma">UI/UX Design & Figma (20 Questions)</option>
+              <option value="Machine Learning & Deep Learning">Machine Learning & Deep Learning (20 Questions)</option>
+            </select>
+            <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+              The student can take this AI 20-Q assessment to reinforce concepts and verify learning.
+            </span>
+          </div>
+
+          <div class="support-reward-notice">
+            <i class="fa-solid fa-coins" style="color: #f59e0b; font-size: 1.25rem;"></i>
+            <div>
+              Reward Payout: <strong id="resolveBountyRewardDisplay" style="color: var(--primary); font-size: 1.05rem;">+1.0 Skill Credits</strong> will be deposited directly into your wallet upon resolution.
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelResolveSupportBtn">Cancel</button>
+          <button type="submit" class="btn btn-emerald" id="submitResolveSupportBtn">
+            <i class="fa-solid fa-coins"></i> Resolve Doubt & Claim Credits
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: UPLOAD EXTERNAL CERTIFICATE -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="uploadCertModal">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-certificate" style="color: #f59e0b;"></i> Submit & Verify Certificate (Original vs Fake)</h3>
+        <div class="modal-close" id="closeUploadCertModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="uploadCertForm">
+        <div class="modal-body" style="gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; background: var(--bg-subtle); padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border-left: 3px solid var(--primary);">
+            <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.35; flex: 1;">
+              Submit your NPTEL/Academic certificate. Our AI engine verifies whether it is <strong>Original (Real)</strong> or <strong>Fake</strong>.
+            </div>
+            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btnFillOriginalCert" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; color: #10b981; border-color: rgba(16, 185, 129, 0.4);" title="Fill valid NPTEL sample data">
+                <i class="fa-solid fa-circle-check"></i> Fill Original (Real)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnFillFakeCert" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="Fill fake sample data to test rejection">
+                <i class="fa-solid fa-triangle-exclamation"></i> Fill Fake (Test)
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnFillManualCert" style="font-size: 0.72rem; padding: 0.25rem 0.55rem; color: #f59e0b; border-color: rgba(245, 158, 11, 0.4);" title="Fill third-party unaccredited sample data to test manual review">
+                <i class="fa-solid fa-user-clock"></i> Fill Third-Party (Manual Review)
+              </button>
+            </div>
+          </div>
+
+          <!-- Animated AI Scanning Progress Indicator -->
+          <div id="certAiScanProgress" style="display: none; background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(14, 165, 233, 0.1)); border: 1px solid rgba(79, 70, 229, 0.3); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+              <span style="font-weight: 800; font-size: 0.88rem; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-robot fa-spin" style="color: var(--primary);"></i> AI Certificate Verification in Progress...
+              </span>
+              <span id="certAiScanPercent" style="font-weight: 700; font-size: 0.82rem; color: var(--primary);">25%</span>
+            </div>
+            <div style="background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 0.75rem;">
+              <div id="certAiScanProgressBar" style="width: 25%; height: 100%; background: linear-gradient(90deg, #6366f1, #10b981); transition: width 0.35s ease;"></div>
+            </div>
+            <div id="certAiScanStepStatus" style="font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size: 0.75rem;"></i> Step 1/4: Extracting certificate information & recipient details...
+            </div>
+          </div>
+
+          <!-- Structured AI Verification Report Container -->
+          <div id="certAiReportContainer" style="display: none; margin-bottom: 0.75rem;"></div>
+
+          <!-- Dynamic Verification Alert Box inside Modal -->
+          <div id="certVerificationModalAlert" style="display: none;"></div>
+
+          <!-- NPTEL File Upload & Logo Dropzone -->
+          <div class="form-group">
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span><i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Upload Certificate Document (PDF / PNG / JPG)</span>
+              <span style="font-size: 0.72rem; color: #6366f1; font-weight: 700;"><i class="fa-solid fa-shield-halved"></i> AI Logo & Seal Scanner Active</span>
+            </label>
+            <div class="cert-file-dropzone" id="certFileDropzone" style="cursor: pointer;">
+              <input type="file" id="nptelCertFileInput" accept=".pdf,.png,.jpg,.jpeg,.webp" style="display: none;">
+              <div id="certUploadPrompt" style="text-align: center; padding: 1.25rem 0.75rem;">
+                <div style="font-size: 2rem; color: #6366f1; margin-bottom: 0.35rem;">
+                  <i class="fa-solid fa-file-shield"></i>
+                </div>
+                <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">
+                  Click to Browse or Drag & Drop Certificate File
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                  Accepts NPTEL / SWAYAM / IIT e-Certificates (PDF, PNG, JPG up to 10MB)
+                </div>
+              </div>
+              <div id="certFilePreviewCard" style="display: none; padding: 0.85rem 1rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid rgba(99, 102, 241, 0.35);">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem; overflow: hidden;">
+                    <div id="certFileIconHolder" style="font-size: 1.8rem; color: #ef4444; flex-shrink: 0;">
+                      <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <div style="overflow: hidden;">
+                      <div id="certFileNameDisplay" style="font-weight: 700; font-size: 0.86rem; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">nptel_cert.pdf</div>
+                      <div id="certFileSizeDisplay" style="font-size: 0.72rem; color: #10b981; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check"></i> <span id="certFileStatusText">Ready for Logo & Security Watermark Scan</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="removeCertFileBtn" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-xmark"></i> Change
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NPTEL Logo Recognition & Official Seal Inspector Card -->
+          <div style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.08)); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: var(--radius-md); padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+              <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(99, 102, 241, 0.18); display: flex; align-items: center; justify-content: center; color: #6366f1; font-size: 1.15rem;">
+                <i class="fa-solid fa-stamp"></i>
+              </div>
+              <div>
+                <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-primary);">NPTEL Logo & IIT Madras Seal Recognition</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Validates official emblem, SWAYAM security token & academic depository authorization</div>
+              </div>
+            </div>
+            <span class="student-badge" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700; font-size: 0.72rem;">
+              <i class="fa-solid fa-shield-halved"></i> Active Verifier
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="certSkillSelect">Associated Course / Skill</label>
+            <select class="form-control" id="certSkillSelect" required>
+              <option value="Python Core & OOP">Python Core & OOP</option>
+              <option value="Machine Learning Basics">Machine Learning Basics</option>
+              <option value="UI/UX Design & Figma">UI/UX Design & Figma</option>
+              <option value="React.js Frontend">React.js Frontend</option>
+              <option value="SQL & Database Design">SQL & Database Design</option>
+              <option value="Cyber Security & Ethical Hacking">Cyber Security & Ethical Hacking</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="certAuthoritySelect">Issuing Authority</label>
+              <select class="form-control" id="certAuthoritySelect">
+                <option value="NPTEL (IIT Madras / Kharagpur)">NPTEL (IIT Madras / Swayam)</option>
+                <option value="Coursera">Coursera Professional</option>
+                <option value="AWS / Amazon">AWS Cloud Certification</option>
+                <option value="Google">Google Career Certificates</option>
+                <option value="Microsoft">Microsoft Learn Certified Professional</option>
+                <option value="HackerRank">HackerRank Gold Verified</option>
+                <option value="Other / Third-Party Academy">Other / Third-Party Academy</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="certGradeInput">Grade / Score</label>
+              <input type="text" class="form-control" id="certGradeInput" placeholder="e.g. Elite + Gold (94%), Distinction" value="Elite + Gold (94%)" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="certTitleInput">Certificate Course Title</label>
+            <input type="text" class="form-control" id="certTitleInput" placeholder="e.g. Programming, Data Structures & Algorithms using Python" value="Programming, Data Structures & Algorithms using Python" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="certIdInput">Credential ID / NPTEL Roll Number</label>
+            <input type="text" class="form-control" id="certIdInput" placeholder="e.g. NPTEL24CS98S12450091" value="NPTEL24CS98S12450091" required>
+            <span style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Authentic NPTEL format: <code>NPTEL[YY][DEPT][SESSION][ROLL]</code> (e.g. NPTEL24CS98S12450091).
+            </span>
+          </div>
+
+          <!-- Academic Security & Watermark Verification Checklist Box -->
+          <div class="cert-verification-checklist-box" id="certVerificationChecklistBox">
+            <div style="font-size: 0.8rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.45rem;">
+              <i class="fa-solid fa-shield-halved" style="color: #6366f1;"></i> Academic Credential Verification Checklist:
+            </div>
+            <div class="cert-check-item">
+              <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+              <div><strong>NPTEL & IIT Seal / Logo:</strong> Scans certificate file for official digital signatures, IIT watermark & security seal.</div>
+            </div>
+            <div class="cert-check-item">
+              <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+              <div><strong>Roll Number & ID Validation:</strong> Verifies format syntax against the National Academic Depository.</div>
+            </div>
+            <div class="cert-check-item">
+              <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
+              <div><strong>Merit Payout (+2.0 Cr):</strong> Original verified certificates are stored in database & <strong>+2.0 Skill Credits</strong> are allotted to wallet.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; background: var(--bg-card); padding: 1rem 1.25rem; border-top: 1px solid var(--border-subtle);">
+          <button type="button" class="btn btn-secondary" id="cancelUploadCertBtn">Cancel</button>
+          <button type="submit" class="btn btn-emerald" id="submitUploadCertBtn" style="padding: 0.75rem 1.6rem; font-weight: 800; font-size: 0.95rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+            <i class="fa-solid fa-stamp"></i> Submit Certificate & Authorize via AI Engine (+2.0 Cr)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: HOST GROUP COHORT / MASTERCLASS     -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="hostCohortModal">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-users-viewfinder" style="color: var(--accent-emerald);"></i> Host Multi-Student Live Masterclass</h3>
+        <div class="modal-close" id="closeHostCohortModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="hostCohortForm">
+        <div class="modal-body" style="gap: 0.9rem;">
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+            Teach $N$ students in a single live interactive classroom. Your total credit earnings scale dynamically with every enrolled student: <strong>$\text{Total Bounty} = N \times 1.0\text{ Credit}$</strong> (1 attending student = +1 Credit added)!
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="cohortSkillSelect">Select Course You Teach</label>
+            <select class="form-control" id="cohortSkillSelect" required>
+              <!-- Populated via JS with tutor's verified courses -->
+              <option value="Python Core & OOP">Python Core & OOP (Elite Master • 1.0 Cr / student)</option>
+              <option value="React.js Frontend">React.js Frontend (Elite Master • 1.0 Cr / student)</option>
+              <option value="UI/UX Design & Figma">UI/UX Design & Figma (Elite Master • 1.0 Cr / student)</option>
+              <option value="SQL & Database Design">SQL & Database Design (Advanced • 1.0 Cr / student)</option>
+              <option value="Machine Learning Basics">Machine Learning Basics (Advanced • 1.0 Cr / student)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="cohortTopicInput">Masterclass Topic & Syllabus</label>
+            <input type="text" class="form-control" id="cohortTopicInput" placeholder="e.g. Masterclass: Full-Stack React Hooks, State Reducers & Performance" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="cohortDurationSelect">Duration (Hours)</label>
+              <select class="form-control" id="cohortDurationSelect">
+                <option value="1">1 Hour</option>
+                <option value="2" selected>2 Hours</option>
+                <option value="3">3 Hours</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cohortCapacitySelect">Max Student Capacity (N)</label>
+              <select class="form-control" id="cohortCapacitySelect">
+                <option value="3">3 Students</option>
+                <option value="5" selected>5 Students</option>
+                <option value="10">10 Students</option>
+                <option value="15">15 Students</option>
+                <option value="20">20 Students</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="cohortDateInput">Session Date</label>
+              <input type="date" class="form-control" id="cohortDateInput" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="cohortTimeInput">Start Time</label>
+              <input type="text" class="form-control" id="cohortTimeInput" value="11:00 AM" required>
+            </div>
+          </div>
+
+          <!-- Dynamic Scaled Payout Estimator Banner -->
+          <div class="support-reward-notice" id="cohortEarningsNotice" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(99, 102, 241, 0.12)); border: 1px solid rgba(16, 185, 129, 0.3);">
+            <i class="fa-solid fa-coins" style="color: #10b981; font-size: 1.4rem;"></i>
+            <div>
+              <div style="font-size: 0.88rem; font-weight: 800; color: var(--text-primary);">
+                Projected Tutor Bounty: <span id="cohortProjectedCreditsDisplay" style="color: var(--accent-emerald); font-size: 1.15rem;">+5.0 Skill Credits</span>
+              </div>
+              <div style="font-size: 0.74rem; color: var(--text-secondary); margin-top: 0.2rem;" id="cohortCalculationFormulaText">
+                5 Students $\times$ 1.0 Credit = <strong>5.0 Total Credits</strong> (1 student attended = +1.0 Credit added to tutor)!
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelHostCohortBtn">Cancel</button>
+          <button type="submit" class="btn btn-emerald" id="submitHostCohortBtn">
+            <i class="fa-solid fa-rocket"></i> Launch Group Masterclass ($N \times \text{Cr}$)
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: DYNAMIC TIERED BOOKING & ESCROW -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-handshake" style="color: var(--primary);"></i> Book Tiered Skill Swap Session</h3>
+        <div class="modal-close" id="closeBookingModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="bookingForm">
+        <div class="modal-body">
+          <input type="hidden" id="bookTeacherId">
+          <input type="hidden" id="bookHourlyRate" value="1.0">
+
+          <div class="form-group">
+            <label class="form-label">Mentor & Course</label>
+            <div style="display: flex; align-items: center; gap: 0.75rem; background: var(--bg-subtle); padding: 0.75rem; border-radius: var(--radius-md);">
+              <img src="" id="bookTeacherAvatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+              <div style="flex: 1;">
+                <div style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                  <span id="bookTeacherName">Rishitha</span>
+                  <span id="bookTeacherTierBadge" class="student-badge" style="font-size: 0.7rem; background: rgba(245, 158, 11, 0.15); color: #b45309;">🥇 Elite Master Tutor</span>
+                </div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);" id="bookSkillName">UI/UX Design & Figma</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-weight: 800; font-size: 1.05rem; color: var(--primary);" id="bookRateDisplay">2.5 Cr/hr</div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);">Tutor Category Rate</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="bookDurationSelect">Duration (Hours)</label>
+              <select class="form-control" id="bookDurationSelect">
+                <option value="1">1 Hour</option>
+                <option value="2" selected>2 Hours</option>
+                <option value="3">3 Hours</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="bookDateInput">Preferred Date</label>
+              <input type="date" class="form-control" id="bookDateInput" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="bookTopicInput">What do you want to learn / focus on?</label>
+            <textarea class="form-control" id="bookTopicInput" rows="3" placeholder="e.g. Figma auto-layout, design tokens, and components..."></textarea>
+          </div>
+
+          <!-- Escrow Breakdown Box -->
+          <div class="escrow-locked-box" style="margin-bottom: 0;">
+            <h5><i class="fa-solid fa-shield-halved"></i> Tiered Escrow Calculation</h5>
+            <p id="bookEscrowNotice">
+              <strong>2 Hours $\times$ 2.5 Credits/hr = 5.0 Credits</strong> will be locked in escrow. Your mentor receives credits only after the session concludes.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelBookingBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="confirmBookingBtn">
+            <i class="fa-solid fa-lock"></i> Lock Credits & Confirm Booking
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AI DYNAMIC 20-QUESTION QUIZ -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="quizModal">
+    <div class="modal-content quiz-modal-container" style="max-width: 800px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="quizModalTitle"><i class="fa-solid fa-award" style="color: var(--primary);"></i> AI Dynamic 20-Question Assessment</h3>
+          <div style="display: flex; gap: 0.4rem; align-items: center; margin-top: 0.25rem; flex-wrap: wrap;">
+            <span class="mark-badge plus">+3 Correct</span>
+            <span class="mark-badge minus">-1 Wrong</span>
+            <span class="mark-badge zero">0 Unattempted</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" id="quizModalSubtitle">• Max: 60 Marks • 15 Mins • Negative Marking Active</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="quizHeaderBackBtn" style="display: none; font-size:0.75rem; padding: 0.35rem 0.75rem;" onclick="window.app.closeQuizModalAndGoHome()">
+            <i class="fa-solid fa-house"></i> Return to Home
+          </button>
+          <button type="button" class="btn btn-secondary" style="font-size:0.75rem; padding: 0.35rem 0.75rem;" onclick="window.app.regenerateQuiz()">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--primary);"></i> Regenerate AI Set
+          </button>
+          <div style="font-family: monospace; font-weight: 700; color: var(--accent-amber); font-size: 1rem; background: var(--bg-subtle); padding: 0.25rem 0.6rem; border-radius: var(--radius-sm);" id="quizCountdownTimer">15:00</div>
+          <div class="modal-close" id="closeQuizModalBtn"><i class="fa-solid fa-xmark"></i></div>
+        </div>
+      </div>
+
+      <div class="modal-body" id="quizQuestionsScreen">
+        <!-- 20-Question Jump Matrix -->
+        <div class="quiz-matrix-container">
+          <div class="quiz-matrix-header" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span><i class="fa-solid fa-table-cells"></i> 20-Question Navigator</span>
+              <span class="student-badge" id="quizAnsweredCountIndicator" style="font-size: 0.72rem; background: var(--bg-card); color: var(--primary); font-weight: 700;">0 / 20 Answered</span>
+            </div>
+            <button type="button" class="btn btn-emerald btn-sm" id="quizQuickSubmitBtn" style="font-size: 0.76rem; padding: 0.25rem 0.65rem;">
+              <i class="fa-solid fa-paper-plane"></i> Submit Assessment
+            </button>
+          </div>
+          <div class="quiz-matrix-grid" id="quizMatrixGrid">
+            <!-- 20 Buttons rendered via JS -->
+          </div>
+        </div>
+
+        <div class="quiz-progress-bar-container">
+          <div class="quiz-progress-bar" id="quizProgressBar"></div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">
+          <span id="quizQuestionNumberIndicator">Question 1 of 20</span>
+          <button type="button" class="clear-answer-btn" id="quizClearAnswerBtn" onclick="window.app.clearCurrentAnswer()">
+            <i class="fa-solid fa-eraser"></i> Clear Choice (0 Marks)
+          </button>
+        </div>
+
+        <div class="quiz-question-box">
+          <div class="quiz-question-text" id="quizQuestionText">Loading AI generated question...</div>
+          <pre class="quiz-code-box" id="quizCodeSnippet" style="display: none;"></pre>
+        </div>
+
+        <div class="quiz-options-list" id="quizOptionsList">
+          <!-- Options rendered via JS -->
+        </div>
+      </div>
+
+      <div class="modal-body" id="quizResultScreen" style="display: none; padding: 1.5rem;">
+        <div class="quiz-result-box" style="padding: 0;">
+          <!-- Dynamic Grade Allotment Banner Card -->
+          <div id="quizAllottedGradeCard" style="margin-bottom: 1.25rem; padding: 1.25rem 1.5rem; border-radius: var(--radius-lg); text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.06); transition: all 0.3s ease;">
+            <!-- Populated dynamically via JS -->
+          </div>
+
+          <!-- Centered Score Summary Row -->
+          <div style="display: flex; justify-content: center; align-items: center; gap: 1.75rem; margin: 1.25rem auto 1rem; flex-wrap: wrap; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1rem 1.5rem; max-width: 600px;">
+            <div class="score-circle pass" id="quizScoreCircle" style="margin: 0; width: 100px; height: 100px; flex-shrink: 0;">
+              <span id="quizScorePercent" style="font-size: 1.6rem;">90%</span>
+              <span style="font-size: 0.7rem; font-weight: 600; text-transform: uppercase;">Score</span>
+            </div>
+            <div style="text-align: left; min-width: 200px;">
+              <div style="font-size: 0.76rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Total Marks Obtained</div>
+              <div style="font-size: 1.75rem; font-weight: 800; color: var(--primary); line-height: 1.2; margin: 0.15rem 0;" id="quizMarksDisplay">54 / 60 Marks</div>
+              <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);" id="quizPassingStatusText">Pass Requirement: ≥ 42 Marks (70%)</div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 1.35rem; font-weight: 800; margin: 1rem 0 0.35rem; text-align: center;" id="quizResultHeading">Congratulations! You Passed!</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); text-align: center; max-width: 620px; margin: 0 auto 1.25rem;" id="quizResultSubtext">
+            You scored distinction and upgraded your Tutor Category!
+          </p>
+
+          <!-- 4-Card Exam Breakdown Grid -->
+          <div class="exam-breakdown-grid" style="margin: 1.25rem 0;">
+            <div class="exam-breakdown-card correct">
+              <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Correct (+3 each)</div>
+              <div class="val" id="quizBreakdownCorrect">18 (+54)</div>
+            </div>
+            <div class="exam-breakdown-card wrong">
+              <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Wrong (-1 each)</div>
+              <div class="val" id="quizBreakdownWrong">2 (-2)</div>
+            </div>
+            <div class="exam-breakdown-card unattempted">
+              <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Unattempted (0)</div>
+              <div class="val" id="quizBreakdownUnattempted">0 (0)</div>
+            </div>
+            <div class="exam-breakdown-card total">
+              <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Net Marks</div>
+              <div class="val" id="quizBreakdownNet">52 / 60</div>
+            </div>
+          </div>
+
+          <div class="quiz-feedback-box" id="quizFeedbackBox" style="max-height: 320px; overflow-y: auto; text-align: left; margin-top: 1rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.1rem;">
+            <!-- 20-question detailed review breakdown with marks -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" id="quizModalFooter" style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <!-- Left Footer Action: Question Flow & Retake / Assessment return -->
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" id="quizPrevBtn" style="display: none;">Previous</button>
+          <button type="button" class="btn btn-primary" id="quizNextBtn">Next Question ➜</button>
+          <button type="button" class="btn btn-emerald" id="quizSubmitBtn" style="display: none;">
+            <i class="fa-solid fa-paper-plane"></i> Submit & Grade (+3 / -1 / 0)
+          </button>
+          <button type="button" class="btn btn-secondary" id="quizBackToAssessmentsBtn" style="display: none;" onclick="window.app.closeQuizModalAndReturn()">
+            <i class="fa-solid fa-arrow-left"></i> Back to Assessments
+          </button>
+          <button type="button" class="btn btn-emerald" id="quizRetakeFromResultsBtn" style="display: none;" onclick="window.app.retakeCurrentQuiz()">
+            <i class="fa-solid fa-rotate-right"></i> Retake Assessment
+          </button>
+        </div>
+
+        <!-- Right Footer Action: Home Navigation -->
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" id="quizBackToHomeBtn" style="display: none;" onclick="window.app.closeQuizModalAndGoHome()">
+            <i class="fa-solid fa-house"></i> Back to Home Page
+          </button>
+          <button type="button" class="btn btn-secondary" id="quizCloseResultBtn" style="display: none;" onclick="window.app.closeQuizModalAndGoHome()">
+            Done & Return
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SUPABASE DATABASE SETTINGS -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="supabaseModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-bolt" style="color: var(--accent-emerald);"></i> Supabase Cloud Settings</h3>
+        <div class="modal-close" id="closeSupabaseModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="supabaseConfigForm">
+        <div class="modal-body">
+          <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.4;">
+            Connect your live <strong>Supabase PostgreSQL</strong> project. The database script <code style="background: var(--bg-subtle); padding: 0.2rem 0.4rem; border-radius: 4px;">database/supabase_schema.sql</code> is ready to run in your Supabase SQL Editor.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="supabaseUrlInput">Supabase Project URL</label>
+            <input type="text" class="form-control" id="supabaseUrlInput" placeholder="https://your-project.supabase.co" value="">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supabaseKeyInput">Supabase Anon / Public Key</label>
+            <input type="password" class="form-control" id="supabaseKeyInput" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." value="">
+          </div>
+
+          <div style="background: var(--bg-subtle); border-radius: var(--radius-md); padding: 0.85rem; font-size: 0.82rem; color: var(--text-secondary);">
+            <div><strong>Active Status:</strong> <span id="supabaseModalStatus" style="color: var(--accent-emerald); font-weight: 700;">Hybrid Engine Ready</span></div>
+            <div style="margin-top: 0.25rem;">Automatic fallback is active to ensure zero downtime.</div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelSupabaseModalBtn">Close</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Save & Connect Supabase
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: SESSION COMPLETION & REVIEW -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-star" style="color: #f59e0b;"></i> Session Completed!</h3>
+        <div class="modal-close" id="closeReviewModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="reviewForm">
+        <div class="modal-body">
+          <input type="hidden" id="reviewSessionId">
+          <div style="text-align: center; margin-bottom: 0.5rem;">
+            <div style="font-size: 2.2rem; color: #f59e0b; margin-bottom: 0.35rem;" id="starRatingGroup">
+              <i class="fa-solid fa-star star-btn" data-val="1"></i>
+              <i class="fa-solid fa-star star-btn" data-val="2"></i>
+              <i class="fa-solid fa-star star-btn" data-val="3"></i>
+              <i class="fa-solid fa-star star-btn" data-val="4"></i>
+              <i class="fa-solid fa-star star-btn" data-val="5"></i>
+            </div>
+            <div style="font-weight: 700; font-size: 0.95rem;">Rate your peer mentor (Rishitha)</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">5.0 credits will be released to their wallet upon submission</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Endorsement Badges</label>
+            <div class="filter-pills" id="reviewTagsGroup">
+              <button type="button" class="filter-pill active" data-tag="NPTEL Verified">🏆 NPTEL Verified</button>
+              <button type="button" class="filter-pill active" data-tag="Super Clear">🌟 Super Clear</button>
+              <button type="button" class="filter-pill active" data-tag="Hands-on Coding">💻 Hands-on Coding</button>
+              <button type="button" class="filter-pill" data-tag="Patient Mentor">🤝 Patient Mentor</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reviewCommentInput">Review & Feedback (Powers Tutor Rating)</label>
+            <textarea class="form-control" id="reviewCommentInput" rows="3" placeholder="Share your honest feedback on how this tutor taught..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="skipReviewBtn">Skip & Release</button>
+          <button type="submit" class="btn btn-emerald">
+            <i class="fa-solid fa-check"></i> Submit Review & Release Credits
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADD NEW SKILL OFFERED / WANTED -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="addSkillModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="addSkillModalTitle"><i class="fa-solid fa-plus-circle" style="color: var(--primary);"></i> Add Skill</h3>
+        <div class="modal-close" id="closeAddSkillModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+      <form id="addSkillForm">
+        <div class="modal-body">
+          <input type="hidden" id="addSkillType" value="offered">
+          
+          <div class="qualification-bonus-banner" id="qualificationBonusNotice">
+            <i class="fa-solid fa-gift" style="color: #f59e0b; font-size: 1.15rem;"></i>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.35;">
+              <strong>🎁 Earn +2.0 Skill Credits:</strong> When you list a course to tutor and qualify with both a <strong>verified Quiz (&ge;70%)</strong> and <strong>Certificate</strong>, you earn <strong>+2.0 Credits</strong> deposited immediately to your wallet!
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="skillNameInput">Skill Title</label>
+            <input type="text" class="form-control" id="skillNameInput" placeholder="e.g. Python Core, React Hooks, Figma Design, SQL..." required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="skillCategorySelect">Category</label>
+              <select class="form-control" id="skillCategorySelect">
+                <option value="Tech">Tech & Programming</option>
+                <option value="Design">UI/UX & Design</option>
+                <option value="Hardware">Hardware & IoT</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="skillLevelSelect">Proficiency Level</label>
+              <select class="form-control" id="skillLevelSelect">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced" selected>Advanced</option>
+                <option value="Expert">Expert</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="skillDescInput" id="skillDescLabel">Teaching Syllabus / Learning Goal</label>
+            <textarea class="form-control" id="skillDescInput" rows="3" placeholder="Describe topics you will cover or what you want to achieve..." required></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancelAddSkillBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveSkillBtn">Save to Portfolio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AUTHENTICATION & ROLE MANAGEMENT   -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content auth-modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <div class="auth-modal-logo">
+            <i class="fa-solid fa-arrows-rotate" style="color: var(--primary);"></i>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; font-size: 1.15rem;">SkillSwap Authentication</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Vignan University Multi-Role Access Control</span>
+          </div>
+        </div>
+        <div class="modal-close" id="closeAuthModalBtn"><i class="fa-solid fa-xmark"></i></div>
+      </div>
+
+      <!-- Auth Modal Tabs -->
+      <div class="auth-tabs-bar">
+        <button type="button" class="auth-tab-btn active" data-authtab="authSignInTab">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+        </button>
+        <button type="button" class="auth-tab-btn" data-authtab="authRegisterTab">
+          <i class="fa-solid fa-user-plus"></i> Create Account
+        </button>
+        <button type="button" class="auth-tab-btn" data-authtab="authRolesTab">
+          <i class="fa-solid fa-users-gear"></i> University Roles
+        </button>
+      </div>
+
+      <!-- TAB 1: SIGN IN -->
+      <div class="auth-tab-pane active" id="authSignInTab">
+        <form id="authLoginForm">
+          <div class="modal-body" style="gap: 1rem;">
+            <!-- Single User Dashboard Profile Login Card -->
+            <div class="auth-single-profile-card" id="authSingleProfileCard">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">
+                  <i class="fa-solid fa-user-shield" style="color: var(--primary);"></i> User Account Dashboard Profile
+                </span>
+                <span class="auth-role-pill role-mentor" id="authCardRoleBadge" style="font-size: 0.65rem; padding: 0.1rem 0.45rem;">MENTOR</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <img src="" id="authCardUserAvatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+                <div style="flex: 1; min-width: 0;">
+                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;" id="authCardUserName">Sri Dhanush</h4>
+                  <p style="margin: 0; font-size: 0.75rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="authCardUserEmail">sri@vignan.ac.in • Vignan University</p>
+                </div>
+                <button type="button" class="btn btn-secondary" id="authSingleUserQuickFillBtn" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;" title="Fill credentials">
+                  <i class="fa-solid fa-bolt" style="color: #f59e0b;"></i> Auto-Fill
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="loginEmailInput">Email or University User ID</label>
+              <div class="input-icon-wrapper">
+                <i class="fa-regular fa-envelope input-icon"></i>
+                <input type="text" class="form-control with-icon" id="loginEmailInput" placeholder="e.g. sri@vignan.ac.in or sri" value="sri@vignan.ac.in" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <label class="form-label" for="loginPasswordInput" style="margin-bottom: 0;">Password</label>
+                <span style="font-size: 0.72rem; color: var(--accent-amber); font-weight: 700;">
+                  <i class="fa-solid fa-shield-check"></i> Starts with Capital Letter (A-Z)
+                </span>
+              </div>
+              <div class="input-icon-wrapper">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" class="form-control with-icon" id="loginPasswordInput" placeholder="Enter password (starts with Capital Letter)" value="Password123" required>
+              </div>
+              <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; display: block;">
+                Email & password will be verified against the database before login.
+              </span>
+            </div>
+
+            <div id="loginErrorMsg" class="auth-feedback-box error" style="display: none;"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelAuthLoginBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="submitLoginBtn">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Dashboard
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 2: CREATE ACCOUNT (REGISTER) -->
+      <div class="auth-tab-pane" id="authRegisterTab" style="display: none;">
+        <form id="authRegisterForm">
+          <div class="modal-body" style="gap: 0.85rem; max-height: 60vh; overflow-y: auto;">
+            <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(16, 185, 129, 0.08)); border: 1px dashed var(--primary); padding: 0.75rem 1rem; border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
+              <div style="font-size: 1.4rem; color: var(--accent-emerald);">🎁</div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                <strong>Welcome Incentive:</strong> New student and mentor accounts instantly receive <strong>3.0 Skill Credits</strong> in their Escrow Wallet!
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="regNameInput">Full Name</label>
+                <input type="text" class="form-control" id="regNameInput" placeholder="e.g. Aditya Varma" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regEmailInput">Vignan Email</label>
+                <input type="email" class="form-control" id="regEmailInput" placeholder="e.g. aditya@vignan.ac.in" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <label class="form-label" for="regPasswordInput" style="margin-bottom: 0;">Password</label>
+                <span style="font-size: 0.72rem; color: var(--accent-amber); font-weight: 700;">
+                  <i class="fa-solid fa-circle-info"></i> Must start with Capital Letter (A-Z)
+                </span>
+              </div>
+              <input type="password" class="form-control" id="regPasswordInput" placeholder="e.g. Secret123 (Starts with Capital Letter)" minlength="6" required>
+              <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; display: block;">
+                Password rules: <strong>1. Starts with Capital Letter (A-Z)</strong> • <strong>2. Min. 6 characters</strong>.
+              </span>
+            </div>
+
+            <!-- Role Selection -->
+            <div class="form-group">
+              <label class="form-label">Select University Persona / Role</label>
+              <div class="auth-role-cards-grid">
+                <label class="role-card-label selected" data-role="STUDENT">
+                  <input type="radio" name="regRole" value="STUDENT" checked style="display: none;">
+                  <div class="role-card-header">
+                    <span class="role-icon-box student"><i class="fa-solid fa-graduation-cap"></i></span>
+                    <span class="role-card-title">STUDENT</span>
+                  </div>
+                  <p class="role-card-desc">Peer learner & attendee. Can book tutors and take AI assessments.</p>
+                </label>
+
+                <label class="role-card-label" data-role="MENTOR">
+                  <input type="radio" name="regRole" value="MENTOR" style="display: none;">
+                  <div class="role-card-header">
+                    <span class="role-icon-box mentor"><i class="fa-solid fa-award"></i></span>
+                    <span class="role-card-title">MENTOR</span>
+                  </div>
+                  <p class="role-card-desc">Certified peer tutor. Can offer courses, earn credits, and level up tiers.</p>
+                </label>
+
+                <label class="role-card-label" data-role="FACULTY_ADMIN">
+                  <input type="radio" name="regRole" value="FACULTY_ADMIN" style="display: none;">
+                  <div class="role-card-header">
+                    <span class="role-icon-box faculty"><i class="fa-solid fa-chalkboard-user"></i></span>
+                    <span class="role-card-title">FACULTY_ADMIN</span>
+                  </div>
+                  <p class="role-card-desc">Department faculty coordinator. Validates NPTEL/Coursera certificates.</p>
+                </label>
+
+                <label class="role-card-label" data-role="SUPER_ADMIN">
+                  <input type="radio" name="regRole" value="SUPER_ADMIN" style="display: none;">
+                  <div class="role-card-header">
+                    <span class="role-icon-box super"><i class="fa-solid fa-shield-halved"></i></span>
+                    <span class="role-card-title">SUPER_ADMIN</span>
+                  </div>
+                  <p class="role-card-desc">Platform administrator with root governance privileges.</p>
+                </label>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="regCollegeInput">Institution / College</label>
+                <input type="text" class="form-control" id="regCollegeInput" value="Vignan University" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="regMajorInput">Branch & Year</label>
+                <input type="text" class="form-control" id="regMajorInput" placeholder="e.g. B.Tech CSE (3rd Year)" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="regBioInput">Skills & Learning Objectives</label>
+              <textarea class="form-control" id="regBioInput" rows="2" placeholder="Describe your background and skills you want to learn or teach..."></textarea>
+            </div>
+
+            <div id="regErrorMsg" class="auth-feedback-box error" style="display: none;"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelAuthRegisterBtn">Cancel</button>
+            <button type="submit" class="btn btn-emerald" id="submitRegisterBtn">
+              <i class="fa-solid fa-user-check"></i> Create Account & Grant 3.0 Cr
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TAB 3: ROLES & PERSONA MATRIX -->
+      <div class="auth-tab-pane" id="authRolesTab" style="display: none;">
+        <div class="modal-body" style="gap: 1rem; max-height: 60vh; overflow-y: auto;">
+          <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.45;">
+            SkillSwap implements strict <strong>Role-Based Access Control (RBAC)</strong> powered by cryptographic JWT authentication:
+          </p>
+
+          <div class="auth-role-overview-list">
+            <div class="role-overview-item">
+              <div class="role-overview-header">
+                <span class="auth-role-pill role-student">STUDENT</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Pujitha, Taman, New Students</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
+                Permissions: Browse Smart Matches, Book Peer Tutors, Escrow Release, Take 20-Q AI Quizzes, Submit Reviews.
+              </p>
+            </div>
+
+            <div class="role-overview-item">
+              <div class="role-overview-header">
+                <span class="auth-role-pill role-mentor">MENTOR</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Sri Dhanush, Rishitha, Bharath</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
+                Permissions: All Student capabilities + Offer Courses, Link NPTEL/Coursera Certs, Earn 1.0 - 2.5 Cr/hr, Level Up Tiers.
+              </p>
+            </div>
+
+            <div class="role-overview-item">
+              <div class="role-overview-header">
+                <span class="auth-role-pill role-faculty">FACULTY_ADMIN</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Dr. S. K. Rao (Dept. Coordinator)</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
+                Permissions: Validate and approve pending external credentials, audit negative marking evaluations, oversee dispute resolution.
+              </p>
+            </div>
+
+            <div class="role-overview-item">
+              <div class="role-overview-header">
+                <span class="auth-role-pill role-super">SUPER_ADMIN</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Platform Root Admin</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
+                Permissions: Full unrestricted system access across all endpoints, database syncing, and role elevations.
+              </p>
+            </div>
+          </div>
+
+          <!-- Active JWT Status Box -->
+          <div class="auth-active-jwt-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-primary);"><i class="fa-solid fa-key" style="color: var(--primary);"></i> Active JWT Session State:</span>
+              <span class="jwt-status-indicator" id="jwtStatusIndicator">Active Token</span>
+            </div>
+            <div class="jwt-token-snippet" id="jwtTokenDisplay">
+              Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            </div>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.35rem;" id="jwtClaimsDisplay">
+              User: Sri Dhanush | Role: MENTOR | ID: sri
+            </div>
+          </div>
+
+          <!-- Database Login History & Audit Trail -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 0.85rem; margin-top: 0.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-primary);"><i class="fa-solid fa-database" style="color: var(--primary);"></i> Database Login Audit Logs (SQLite / Supabase):</span>
+              <button type="button" class="btn-sm btn-secondary" id="refreshLoginLogsBtn" style="padding: 0.15rem 0.5rem; font-size: 0.7rem;"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+            </div>
+            <div id="loginHistoryListContainer" style="display: flex; flex-direction: column; gap: 0.35rem; max-height: 180px; overflow-y: auto;">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="closeAuthRolesBtn">Close</button>
+          <button type="button" class="btn btn-primary" id="refreshJwtBtn">
+            <i class="fa-solid fa-arrows-rotate"></i> Re-verify Auth Token
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AUDIO & VIDEO SETTINGS (LIVE & 1-ON-1) -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="mediaSettingsModal">
+    <div class="modal-dialog" style="max-width: 650px;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div style="width: 38px; height: 38px; border-radius: var(--radius-md); background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+              <i class="fa-solid fa-sliders" style="font-size: 1.15rem;"></i>
+            </div>
+            <div>
+              <h3 class="modal-title" style="margin-bottom: 0.1rem;">Audio & Video Device Settings</h3>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0;">Configure microphones, webcams, noise cancellation, and stream quality</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" id="closeMediaSettingsModalBtn">&times;</button>
+        </div>
+
+        <!-- Modal Tab Navigation -->
+        <div class="media-modal-tabs">
+          <button type="button" class="media-modal-tab active" data-mediatab="audio" id="tabBtnAudio">
+            <i class="fa-solid fa-microphone-lines"></i> Audio & Microphone
+          </button>
+          <button type="button" class="media-modal-tab" data-mediatab="video" id="tabBtnVideo">
+            <i class="fa-solid fa-video"></i> Video & Camera
+          </button>
+        </div>
+
+        <div class="modal-body" style="padding-top: 1rem;">
+          <!-- TAB 1: AUDIO SETTINGS -->
+          <div class="media-tab-content active" id="tabContentAudio">
+            <!-- Microphone Input Select -->
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label class="form-label" style="display: flex; justify-content: space-between;">
+                <span><i class="fa-solid fa-microphone"></i> Microphone (Input Device)</span>
+                <span style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 600;" id="micStatusIndicator">● Device Ready</span>
+              </label>
+              <select class="form-control" id="audioInputSelect">
+                <option value="default">Default Microphone (Built-in Audio)</option>
+                <option value="headset">Studio Headset Microphone (USB / Bluetooth)</option>
+                <option value="realtek">Realtek High Definition Audio Mic</option>
+              </select>
+            </div>
+
+            <!-- Mic Input Level & Volume Slider -->
+            <div class="form-group" style="background: var(--bg-subtle); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; border: 1px solid var(--border-subtle);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label class="form-label" style="margin-bottom: 0; font-size: 0.85rem;">
+                  <i class="fa-solid fa-volume-high"></i> Input Volume & Gain
+                </label>
+                <span style="font-size: 0.82rem; font-weight: 700; color: var(--primary);" id="micVolumeValueDisplay">85%</span>
+              </div>
+              <input type="range" class="form-range" id="micVolumeSlider" min="0" max="100" value="85" style="width: 100%; accent-color: var(--primary);">
+              
+              <!-- Real-time dB level meter -->
+              <div style="margin-top: 0.75rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+                  <span>Input Level:</span>
+                  <span id="micDbLevelDisplay">-18 dB (Nominal)</span>
+                </div>
+                <div class="audio-level-meter-container">
+                  <div class="audio-level-meter-bar" id="audioLevelMeterBar" style="width: 65%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Audio Enhancements -->
+            <div style="margin-bottom: 1.25rem;">
+              <label class="form-label" style="margin-bottom: 0.6rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Audio Filters & Optimizations</label>
+              <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                <label class="checkbox-setting-card">
+                  <input type="checkbox" id="chkNoiseSuppression" checked>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 0.85rem;">AI Background Noise Suppression</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Eliminates keyboard clicks, fan hums, and classroom chatter</div>
+                  </div>
+                  <span class="setting-pill">Active</span>
+                </label>
+
+                <label class="checkbox-setting-card">
+                  <input type="checkbox" id="chkEchoCancellation" checked>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 0.85rem;">Acoustic Echo Cancellation (AEC)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Prevents feedback loops when using external laptop speakers</div>
+                  </div>
+                  <span class="setting-pill">Active</span>
+                </label>
+
+                <label class="checkbox-setting-card">
+                  <input type="checkbox" id="chkAutoGain" checked>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 0.85rem;">Automatic Voice Level Equalizer (AGC)</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Normalizes soft-spoken and loud questions automatically</div>
+                  </div>
+                  <span class="setting-pill">Active</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Speaker Output & Test -->
+            <div class="form-group" style="margin-bottom: 0.5rem;">
+              <label class="form-label"><i class="fa-solid fa-headphones"></i> Speaker (Output Device)</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <select class="form-control" id="audioOutputSelect" style="flex: 1;">
+                  <option value="default">Default Output (Speakers / Headphones)</option>
+                  <option value="external">External Stereo Audio Output</option>
+                  <option value="monitor">Digital Audio (HDMI / DisplayPort)</option>
+                </select>
+                <button type="button" class="btn btn-secondary" id="modalTestSpeakerBtn" style="white-space: nowrap;">
+                  <i class="fa-solid fa-play"></i> Test Sound
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: VIDEO SETTINGS -->
+          <div class="media-tab-content" id="tabContentVideo" style="display: none;">
+            <!-- Camera Preview Window -->
+            <div class="camera-preview-container" style="position: relative; background: #0f172a; border-radius: var(--radius-lg); height: 190px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; border: 1px solid var(--border-subtle);">
+              <video id="settingsVideoPreview" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none;"></video>
+              <canvas id="settingsCanvasPreview" style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); display: none;"></canvas>
+              <div id="settingsVideoPlaceholder" style="text-align: center;">
+                <img src="" id="settingsPreviewAvatar" style="width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); margin-bottom: 0.4rem;" onerror="window.handleAvatarError(this, 'sri')">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #f8fafc;" id="settingsPreviewName">Sri Dhanush</div>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Camera Preview Standby</div>
+              </div>
+              <div class="camera-preview-overlay" style="position: absolute; bottom: 8px; left: 8px; right: 8px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 0.3rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.72rem; color: #fff;">
+                <span id="previewResolutionTag">1080p Full HD • 30 FPS</span>
+                <button type="button" class="btn-sm btn-primary" id="startCamTestBtn" style="padding: 0.15rem 0.5rem; font-size: 0.7rem;">
+                  <i class="fa-solid fa-camera"></i> Test Camera
+                </button>
+              </div>
+            </div>
+
+            <!-- Camera Input Device -->
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label"><i class="fa-solid fa-video"></i> Camera (Video Input)</label>
+              <select class="form-control" id="videoInputSelect">
+                <option value="default">Integrated HD Camera (Built-in Webcam)</option>
+                <option value="external_hd">USB Full HD 1080p Wide Camera</option>
+                <option value="obs">OBS Virtual Camera</option>
+              </select>
+            </div>
+
+            <!-- Video Quality Preset & Virtual Background -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-gauge-high"></i> Stream Resolution</label>
+                <select class="form-control" id="videoResolutionSelect">
+                  <option value="1080p">1080p Full HD (Recommended)</option>
+                  <option value="720p">720p HD (Balanced)</option>
+                  <option value="480p">480p SD (Standard)</option>
+                  <option value="360p">360p Data Saver</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-image"></i> Virtual Background</label>
+                <select class="form-control" id="virtualBgSelect">
+                  <option value="none">None (Standard)</option>
+                  <option value="blur">Background Blur (Subtle)</option>
+                  <option value="campus">Vignan Campus Classroom</option>
+                  <option value="studio">Minimalist Tech Studio</option>
+                  <option value="library">Academic Library</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Video Toggles -->
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+              <label class="checkbox-setting-card">
+                <input type="checkbox" id="chkMirrorCamera" checked>
+                <div style="flex: 1;">
+                  <div style="font-weight: 700; font-size: 0.85rem;">Mirror Video Preview</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Flips camera horizontally for natural presentation</div>
+                </div>
+              </label>
+
+              <label class="checkbox-setting-card">
+                <input type="checkbox" id="chkLowLightBoost" checked>
+                <div style="flex: 1;">
+                  <div style="font-weight: 700; font-size: 0.85rem;">AI Low-Light Enhancement</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Brightens face automatically during evening tutoring</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="closeMediaSettingsBtn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveMediaSettingsBtn">
+            <i class="fa-solid fa-check"></i> Save & Apply Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: EDIT & STORE USER DETAILS IN DATABASE -->
+  <!-- ========================================== -->
+  <div class="modal-overlay" id="editProfileModal">
+    <div class="modal-dialog" style="max-width: 620px;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div style="width: 38px; height: 38px; border-radius: var(--radius-md); background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+              <i class="fa-solid fa-database" style="font-size: 1.15rem;"></i>
+            </div>
+            <div>
+              <h3 class="modal-title" style="margin-bottom: 0.1rem;">Store & Update User Details in Database</h3>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0;">Commit updated profile, institution, bio, and login credentials to the database</p>
+            </div>
+          </div>
+          <button type="button" class="modal-close" id="closeEditProfileModalBtn">&times;</button>
+        </div>
+
+        <form id="editProfileForm">
+          <div class="modal-body" style="gap: 0.85rem; max-height: 60vh; overflow-y: auto;">
+            <!-- Database Storage Notice -->
+            <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(16, 185, 129, 0.08)); border: 1px dashed var(--primary); padding: 0.75rem 1rem; border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
+              <div style="font-size: 1.4rem; color: var(--primary);"><i class="fa-solid fa-server"></i></div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                <strong>Database Persistence:</strong> All user details edited here will be immediately updated and stored in the <code>users</code> table of the SQLite / Supabase PostgreSQL database.
+              </div>
+            </div>
+
+            <input type="hidden" id="editUserIdHidden">
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="editUserNameInput">Full Name</label>
+                <input type="text" class="form-control" id="editUserNameInput" placeholder="e.g. Sri Dhanush" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editUserEmailInput">Vignan Email Address</label>
+                <input type="email" class="form-control" id="editUserEmailInput" placeholder="e.g. sri@vignan.ac.in" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="editUserCollegeInput">College / University</label>
+                <input type="text" class="form-control" id="editUserCollegeInput" value="Vignan University" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="editUserMajorInput">Branch, Major & Year</label>
+                <input type="text" class="form-control" id="editUserMajorInput" placeholder="e.g. B.Tech CSE (3rd Year, 1st Sem)" required>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label" for="editUserRoleSelect">User Persona / Role in Database</label>
+                <select class="form-control" id="editUserRoleSelect">
+                  <option value="STUDENT">STUDENT (Peer Learner)</option>
+                  <option value="MENTOR">MENTOR (Peer Tutor)</option>
+                  <option value="FACULTY_ADMIN">FACULTY_ADMIN (Faculty Validator)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="editUserAvatarSelect">Profile Avatar Preset</label>
+                <select class="form-control" id="editUserAvatarSelect">
+                  <option value="sri">Sri Dhanush (Male Student / Mentor)</option>
+                  <option value="rishitha">Rishitha (Female UI/UX Mentor)</option>
+                  <option value="bharath">Bharath (Senior Fullstack Developer)</option>
+                  <option value="pujitha">Pujitha (Female Data Science Student)</option>
+                  <option value="taman">Taman (Cybersecurity Student)</option>
+                  <option value="admin">Dr. S. K. Rao (Faculty Admin)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="editUserBioInput">Bio, Skills & Learning Objectives</label>
+              <textarea class="form-control" id="editUserBioInput" rows="3" placeholder="Describe your background, certifications, and tutoring topics..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                <label class="form-label" for="editUserPasswordInput" style="margin-bottom: 0;">New Password (Optional)</label>
+                <span style="font-size: 0.72rem; color: var(--accent-amber); font-weight: 700;">
+                  <i class="fa-solid fa-circle-info"></i> Must start with Capital Letter (A-Z)
+                </span>
+              </div>
+              <input type="password" class="form-control" id="editUserPasswordInput" placeholder="Enter new password starting with Capital Letter (min. 6 chars)">
+              <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.2rem; display: block;">
+                Leave blank to keep current password. If updating, password must start with a capital letter (A-Z) and have at least 6 characters.
+              </span>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelEditProfileBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveProfileToDbBtn">
+              <i class="fa-solid fa-floppy-disk"></i> Save & Store Details in Database
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

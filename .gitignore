@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment Variables
+.env
+.env.local
+*.env
+
+# SQLite Database & Backups
+*.db
+*.sqlite
+*.sqlite3
+backend/database/*.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS & Backup Files
+.DS_Store
+Thumbs.db
+* - Copy/
+*- Copy/
+* - Copy
+*- Copy
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.gemini/
