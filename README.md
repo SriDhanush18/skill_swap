@@ -137,3 +137,44 @@ docker run -d -p 3000:3000 --name skillswap-app skillswap:latest
 
 ## 📜 License
 Developed for **Vignan University** student community under the **ISC License**.
+
+
+🛠️ Technology Stack
+Frontend
+Technology	Purpose
+React.js	Building the interactive user interface
+JavaScript	Application logic and client-side functionality
+HTML5	Web page structure
+CSS3	Styling and responsive design
+Backend
+Technology	Purpose
+Node.js	Server-side JavaScript runtime
+Express.js	REST API and backend framework
+REST API	Communication between frontend and backend
+Database & Cloud
+Technology	Purpose
+Supabase PostgreSQL	Production relational database
+Supabase Auth	User authentication
+Supabase Storage	Certificate and document storage
+SQLite	Local development/testing database
+Certificate Verification
+Technology/Technique	Purpose
+OCR	Extract text from certificates
+Image Processing	Analyze certificate images
+Logo Verification	Compare certificate logos with trusted references
+QR Verification	Validate QR codes when available
+Certificate ID Validation	Check certificate identifiers
+Verification Engine	Combine multiple checks to determine authenticity
+Real-Time Communication
+Technology	Purpose
+LiveKit	Real-time audio/video communication
+WebRTC	Low-latency media communication
+LiveKit Tokens	Secure room access
+Development & Deployment
+Technology	Purpose
+Git	Version control
+GitHub	Repository hosting and collaboration
+Docker	Containerization
+VS Code	Development environment
+Postman	API testing
+
