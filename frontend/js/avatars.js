@@ -14,7 +14,7 @@
 const USER_LOGO_CONFIGS = {
   sri: {
     name: 'Sri Dhanush',
-    title: 'Lead Mentor • Python & AI Specialist',
+    title: 'Lead Tutor • Python & AI Specialist',
     initials: 'SD',
     bgGradient: ['#312E81', '#4F46E5', '#3B82F6'],
     accentColor: '#60A5FA',
@@ -299,7 +299,7 @@ function getUserLogoCardHtml(userOrId, size = 44) {
   const userMajor = user?.major || 'Vignan University';
   const logoUrl = getStudentAvatar(userId);
   const cfg = USER_LOGO_CONFIGS[String(userId || 'sri').toLowerCase()] || {};
-  const badgeText = cfg.badgeText || (user?.isAdmin || user?.role === 'FACULTY_ADMIN' ? 'FACULTY ADMIN' : 'STUDENT');
+  const badgeText = cfg.badgeText || (user?.isAdmin || user?.role === 'ADMIN' || user?.role === 'FACULTY_ADMIN' ? 'ADMIN' : 'STUDENT');
   const badgeIcon = cfg.badgeIcon || '🎓';
 
   return `

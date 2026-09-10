@@ -176,17 +176,17 @@ class SkillSwapStore {
     if (this.currentUser && this.currentUser.id === persona.id) {
       return { ...persona, ...this.currentUser, role: this.currentUser.role || persona.role || 'STUDENT' };
     }
-    return { ...persona, role: persona.role || (persona.isAdmin ? 'FACULTY_ADMIN' : 'STUDENT') };
+    return { ...persona, role: persona.role || (persona.isAdmin ? 'ADMIN' : 'STUDENT') };
   }
 
   getUserRole() {
     const cur = this.getCurrentPersona();
-    return cur.role || (cur.isAdmin ? 'FACULTY_ADMIN' : 'STUDENT');
+    return cur.role || (cur.isAdmin ? 'ADMIN' : 'STUDENT');
   }
 
   isFacultyAdmin() {
     const role = this.getUserRole();
-    return role === 'FACULTY_ADMIN' || role === 'SUPER_ADMIN' || this.getCurrentPersona()?.isAdmin;
+    return role === 'ADMIN' || role === 'FACULTY_ADMIN' || role === 'SUPER_ADMIN' || this.getCurrentPersona()?.isAdmin;
   }
 
   async switchPersona(personaId) {

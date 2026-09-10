@@ -1282,7 +1282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (emailInput) emailInput.value = user.email || '';
       if (collegeInput) collegeInput.value = user.college || 'Vignan University';
       if (majorInput) majorInput.value = user.major || '';
-      if (roleSelect) roleSelect.value = user.role || 'MENTOR';
+      if (roleSelect) roleSelect.value = (user.role === 'ADMIN' || user.isAdmin) ? 'ADMIN' : 'STUDENT';
       if (avatarSelect) avatarSelect.value = user.avatar || user.id || 'sri';
       if (bioInput) bioInput.value = user.bio || '';
       if (passwordInput) passwordInput.value = '';
@@ -1701,8 +1701,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       if (claimsDisplay && user) {
-        const role = user.role || (user.isAdmin ? 'FACULTY_ADMIN' : 'STUDENT');
-        claimsDisplay.innerHTML = `User: <strong>${user.name}</strong> | Email: <strong>${user.email || user.id + '@vignan.ac.in'}</strong> | Role: <span class="auth-role-pill role-${role.toLowerCase().replace('_', '')}">${role}</span> | Logins: <strong>${user.login_count || 1}</strong>`;
+        const role = user.role || (user.isAdmin ? 'ADMIN' : 'STUDENT');
+        const roleClass = (role === 'ADMIN' || role === 'FACULTY_ADMIN' || role === 'SUPER_ADMIN') ? 'role-admin' : 'role-student';
+        claimsDisplay.innerHTML = `User: <strong>${user.name}</strong> | Email: <strong>${user.email || user.id + '@vignan.ac.in'}</strong> | Role: <span class="auth-role-pill ${roleClass}">${role}</span> | Logins: <strong>${user.login_count || 1}</strong>`;
       }
 
       this.renderLoginHistoryLogs();
@@ -4251,22 +4252,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       const rolePillEl = document.getElementById('profileCardRolePill');
       if (rolePillEl) {
-        const r = user.role || 'STUDENT';
+        const r = user.role || (user.isAdmin ? 'ADMIN' : 'STUDENT');
         rolePillEl.textContent = r;
-        let rClass = 'role-student';
-        if (r === 'MENTOR') rClass = 'role-mentor';
-        else if (r === 'FACULTY_ADMIN') rClass = 'role-faculty';
-        else if (r === 'SUPER_ADMIN') rClass = 'role-super';
+        const rClass = (r === 'ADMIN' || r === 'FACULTY_ADMIN' || r === 'SUPER_ADMIN') ? 'role-admin' : 'role-student';
         rolePillEl.className = `auth-role-pill ${rClass}`;
       }
 
       const badgesContainer = document.getElementById('profileBadgeContainer');
       if (badgesContainer) {
         const role = window.store.getUserRole();
-        let roleClass = 'role-student';
-        if (role === 'MENTOR') roleClass = 'role-mentor';
-        else if (role === 'FACULTY_ADMIN') roleClass = 'role-faculty';
-        else if (role === 'SUPER_ADMIN') roleClass = 'role-super';
+        const roleClass = (role === 'ADMIN' || role === 'FACULTY_ADMIN' || role === 'SUPER_ADMIN') ? 'role-admin' : 'role-student';
 
         const cfg = window.USER_LOGO_CONFIGS?.[user.id?.toLowerCase()] || {};
         const roleBadgeHtml = `<span class="auth-role-pill ${roleClass}" style="margin-right: 0.35rem;"><i class="fa-solid fa-shield-halved"></i> ${role}</span>`;
@@ -4675,7 +4670,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const currentPersona = window.store.getCurrentPersona();
       const currentRole = window.store.getUserRole();
-      const isMentorOrAdmin = currentRole === 'MENTOR' || currentRole === 'FACULTY_ADMIN' || currentRole === 'SUPER_ADMIN' || currentPersona.role === 'MENTOR' || currentPersona.isAdmin;
+      const isMentorOrAdmin = currentRole === 'ADMIN' || currentRole === 'STUDENT' || currentPersona.isAdmin;
 
       let filtered = (this.supportTickets || []).slice();
 

@@ -24,7 +24,7 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     platform: 'SkillSwap Peer-to-Peer Hub',
     authSystem: 'JWT + Supabase Auth Bridge + RBAC Active',
-    roles: ['STUDENT', 'MENTOR', 'FACULTY_ADMIN', 'SUPER_ADMIN'],
+    roles: ['STUDENT', 'ADMIN'],
     markingScheme: '+3 for Correct, -1 for Wrong, 0 for Unattempted (Max: 60 Marks)'
   });
 });

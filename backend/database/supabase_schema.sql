@@ -27,7 +27,7 @@ CREATE TABLE users (
     id TEXT PRIMARY KEY,
     email TEXT UNIQUE,
     password_hash TEXT,
-    role TEXT NOT NULL DEFAULT 'STUDENT' CHECK (role IN ('STUDENT', 'MENTOR', 'FACULTY_ADMIN', 'SUPER_ADMIN')),
+    role TEXT NOT NULL DEFAULT 'STUDENT' CHECK (role IN ('STUDENT', 'ADMIN')),
     name TEXT NOT NULL,
     college TEXT NOT NULL DEFAULT 'Vignan University',
     major TEXT NOT NULL,

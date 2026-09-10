@@ -16,6 +16,9 @@
   <!-- Vector Avatar Engine (Loaded early for zero-flicker SVG rendering) -->
   <script src="js/avatars.js"></script>
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="assets/skillswap_logo.jpg">
+
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -25,7 +28,7 @@
   <header class="top-navbar">
     <div class="brand-wrapper" id="brandHomeBtn">
       <div class="brand-icon">
-        <i class="fa-solid fa-arrows-rotate"></i>
+        <img src="assets/skillswap_logo.jpg" alt="SkillSwap Logo" class="brand-logo-img">
       </div>
       <div class="brand-text">
         <span class="brand-title">SkillSwap</span>
@@ -59,7 +62,7 @@
       <!-- Auth & Role Switcher Button -->
       <button class="nav-auth-btn" id="navAuthBtn" title="Sign In, Register, or Switch Role">
         <i class="fa-solid fa-user-shield"></i>
-        <span id="navAuthRoleBadge" class="auth-role-pill role-mentor">MENTOR</span>
+        <span id="navAuthRoleBadge" class="auth-role-pill role-student">STUDENT</span>
       </button>
 
       <!-- Notification Bell -->
@@ -105,7 +108,7 @@
               <div style="flex: 1; min-width: 0;">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.25rem;">
                   <span id="navDropdownName" style="font-weight: 800; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sri Dhanush</span>
-                  <span id="navDropdownRoleBadge" class="auth-role-pill role-mentor" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">MENTOR</span>
+                  <span id="navDropdownRoleBadge" class="auth-role-pill role-student" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">STUDENT</span>
                 </div>
                 <div id="navDropdownEmail" style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">sri@vignan.ac.in</div>
                 <div id="navDropdownMajor" style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem;">B.Tech CSE (3rd Year)</div>
@@ -250,7 +253,10 @@
               </div>
             </div>
           </div>
-          <div class="concept-actions">
+          <div class="concept-actions" style="display: flex; flex-direction: column; align-items: center; gap: 0.85rem; z-index: 1;">
+            <div class="concept-hero-logo-box">
+              <img src="assets/skillswap_logo.jpg" alt="SkillSwap Emblem" class="concept-hero-logo">
+            </div>
             <button class="btn btn-white" id="bannerQuickSwapBtn">
               <i class="fa-solid fa-handshake"></i> Book Top Reciprocal Swap
             </button>
@@ -962,7 +968,7 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
               <span style="color: var(--text-muted);">|</span>
               <span><strong>Last Login:</strong> <span id="profileCardLastLogin">Just now</span></span>
               <span style="color: var(--text-muted);">|</span>
-              <span><strong>Role in DB:</strong> <span class="auth-role-pill role-mentor" id="profileCardRolePill" style="font-size: 0.68rem; padding: 0.1rem 0.4rem;">MENTOR</span></span>
+              <span><strong>Role in DB:</strong> <span class="auth-role-pill role-student" id="profileCardRolePill" style="font-size: 0.68rem; padding: 0.1rem 0.4rem;">STUDENT</span></span>
             </div>
           </div>
         </div>
@@ -2053,9 +2059,9 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
   <div class="modal-overlay" id="authModal">
     <div class="modal-content auth-modal-content">
       <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
           <div class="auth-modal-logo">
-            <i class="fa-solid fa-arrows-rotate" style="color: var(--primary);"></i>
+            <img src="assets/skillswap_logo.jpg" alt="SkillSwap Logo" class="brand-logo-img">
           </div>
           <div>
             <h3 class="modal-title" style="margin: 0; font-size: 1.15rem;">SkillSwap Authentication</h3>
@@ -2088,7 +2094,7 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
                 <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">
                   <i class="fa-solid fa-user-shield" style="color: var(--primary);"></i> User Account Dashboard Profile
                 </span>
-                <span class="auth-role-pill role-mentor" id="authCardRoleBadge" style="font-size: 0.65rem; padding: 0.1rem 0.45rem;">MENTOR</span>
+                <span class="auth-role-pill role-student" id="authCardRoleBadge" style="font-size: 0.65rem; padding: 0.1rem 0.45rem;">STUDENT</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <img src="" id="authCardUserAvatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
@@ -2145,7 +2151,7 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
             <div style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(16, 185, 129, 0.08)); border: 1px dashed var(--primary); padding: 0.75rem 1rem; border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.75rem;">
               <div style="font-size: 1.4rem; color: var(--accent-emerald);">🎁</div>
               <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                <strong>Welcome Incentive:</strong> New student and mentor accounts instantly receive <strong>3.0 Skill Credits</strong> in their Escrow Wallet!
+                <strong>Welcome Incentive:</strong> New student accounts instantly receive <strong>3.0 Skill Credits</strong> in their Escrow Wallet!
               </div>
             </div>
 
@@ -2173,44 +2179,26 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
               </span>
             </div>
 
-            <!-- Role Selection -->
+            <!-- Role Selection (STUDENT and ADMIN) -->
             <div class="form-group">
-              <label class="form-label">Select University Persona / Role</label>
-              <div class="auth-role-cards-grid">
+              <label class="form-label">Select University Persona / Account Type</label>
+              <div class="auth-role-cards-grid" style="grid-template-columns: 1fr 1fr;">
                 <label class="role-card-label selected" data-role="STUDENT">
                   <input type="radio" name="regRole" value="STUDENT" checked style="display: none;">
                   <div class="role-card-header">
                     <span class="role-icon-box student"><i class="fa-solid fa-graduation-cap"></i></span>
                     <span class="role-card-title">STUDENT</span>
                   </div>
-                  <p class="role-card-desc">Peer learner & attendee. Can book tutors and take AI assessments.</p>
+                  <p class="role-card-desc">Peer learner & tutor. Can learn, teach, swap skills, take 20-Q AI quizzes, upload certificates, and earn credits.</p>
                 </label>
 
-                <label class="role-card-label" data-role="MENTOR">
-                  <input type="radio" name="regRole" value="MENTOR" style="display: none;">
+                <label class="role-card-label" data-role="ADMIN">
+                  <input type="radio" name="regRole" value="ADMIN" style="display: none;">
                   <div class="role-card-header">
-                    <span class="role-icon-box mentor"><i class="fa-solid fa-award"></i></span>
-                    <span class="role-card-title">MENTOR</span>
+                    <span class="role-icon-box faculty"><i class="fa-solid fa-shield-halved"></i></span>
+                    <span class="role-card-title">ADMIN</span>
                   </div>
-                  <p class="role-card-desc">Certified peer tutor. Can offer courses, earn credits, and level up tiers.</p>
-                </label>
-
-                <label class="role-card-label" data-role="FACULTY_ADMIN">
-                  <input type="radio" name="regRole" value="FACULTY_ADMIN" style="display: none;">
-                  <div class="role-card-header">
-                    <span class="role-icon-box faculty"><i class="fa-solid fa-chalkboard-user"></i></span>
-                    <span class="role-card-title">FACULTY_ADMIN</span>
-                  </div>
-                  <p class="role-card-desc">Department faculty coordinator. Validates NPTEL/Coursera certificates.</p>
-                </label>
-
-                <label class="role-card-label" data-role="SUPER_ADMIN">
-                  <input type="radio" name="regRole" value="SUPER_ADMIN" style="display: none;">
-                  <div class="role-card-header">
-                    <span class="role-icon-box super"><i class="fa-solid fa-shield-halved"></i></span>
-                    <span class="role-card-title">SUPER_ADMIN</span>
-                  </div>
-                  <p class="role-card-desc">Platform administrator with root governance privileges.</p>
+                  <p class="role-card-desc">Platform & department coordinator. Validates certificates, audits quizzes, and manages university platform security.</p>
                 </label>
               </div>
             </div>
@@ -2247,47 +2235,27 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
       <div class="auth-tab-pane" id="authRolesTab" style="display: none;">
         <div class="modal-body" style="gap: 1rem; max-height: 60vh; overflow-y: auto;">
           <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.45;">
-            SkillSwap implements strict <strong>Role-Based Access Control (RBAC)</strong> powered by cryptographic JWT authentication:
+            SkillSwap implements strict <strong>Role-Based Access Control (RBAC)</strong> powered by cryptographic JWT authentication with 2 primary roles:
           </p>
 
           <div class="auth-role-overview-list">
             <div class="role-overview-item">
               <div class="role-overview-header">
                 <span class="auth-role-pill role-student">STUDENT</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Pujitha, Taman, New Students</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Learners & Peer Tutors (Sri Dhanush, Rishitha, Bharath, Pujitha, Taman, etc.)</span>
               </div>
               <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
-                Permissions: Browse Smart Matches, Book Peer Tutors, Escrow Release, Take 20-Q AI Quizzes, Submit Reviews.
+                Permissions: Browse Smart Matches, Book Peer Tutors, Offer Skills/Courses, Take 20-Q AI Quizzes, Upload Academic Certificates, Escrow Releases, Earn & Spend Skill Credits.
               </p>
             </div>
 
             <div class="role-overview-item">
               <div class="role-overview-header">
-                <span class="auth-role-pill role-mentor">MENTOR</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Sri Dhanush, Rishitha, Bharath</span>
+                <span class="auth-role-pill role-faculty">ADMIN</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Platform & University Administrators (Dr. S. K. Rao)</span>
               </div>
               <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
-                Permissions: All Student capabilities + Offer Courses, Link NPTEL/Coursera Certs, Earn 1.0 - 2.5 Cr/hr, Level Up Tiers.
-              </p>
-            </div>
-
-            <div class="role-overview-item">
-              <div class="role-overview-header">
-                <span class="auth-role-pill role-faculty">FACULTY_ADMIN</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Dr. S. K. Rao (Dept. Coordinator)</span>
-              </div>
-              <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
-                Permissions: Validate and approve pending external credentials, audit negative marking evaluations, oversee dispute resolution.
-              </p>
-            </div>
-
-            <div class="role-overview-item">
-              <div class="role-overview-header">
-                <span class="auth-role-pill role-super">SUPER_ADMIN</span>
-                <span style="font-size: 0.75rem; color: var(--text-muted);">Platform Root Admin</span>
-              </div>
-              <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.25rem 0;">
-                Permissions: Full unrestricted system access across all endpoints, database syncing, and role elevations.
+                Permissions: Validate and approve pending external credentials, audit negative marking evaluations, manage dispute tickets, oversee platform analytics and treasury.
               </p>
             </div>
           </div>
@@ -2585,18 +2553,17 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
               <div class="form-group">
                 <label class="form-label" for="editUserRoleSelect">User Persona / Role in Database</label>
                 <select class="form-control" id="editUserRoleSelect">
-                  <option value="STUDENT">STUDENT (Peer Learner)</option>
-                  <option value="MENTOR">MENTOR (Peer Tutor)</option>
-                  <option value="FACULTY_ADMIN">FACULTY_ADMIN (Faculty Validator)</option>
+                  <option value="STUDENT">STUDENT (Peer Learner & Tutor)</option>
+                  <option value="ADMIN">ADMIN (Platform & University Administrator)</option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label class="form-label" for="editUserAvatarSelect">Profile Avatar Preset</label>
                 <select class="form-control" id="editUserAvatarSelect">
-                  <option value="sri">Sri Dhanush (Male Student / Mentor)</option>
-                  <option value="rishitha">Rishitha (Female UI/UX Mentor)</option>
-                  <option value="bharath">Bharath (Senior Fullstack Developer)</option>
+                  <option value="sri">Sri Dhanush (Male Student / Tutor)</option>
+                  <option value="rishitha">Rishitha (Female UI/UX Student / Tutor)</option>
+                  <option value="bharath">Bharath (Senior Student / Fullstack Tutor)</option>
                   <option value="pujitha">Pujitha (Female Data Science Student)</option>
                   <option value="taman">Taman (Cybersecurity Student)</option>
                   <option value="admin">Dr. S. K. Rao (Faculty Admin)</option>

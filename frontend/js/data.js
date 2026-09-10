@@ -187,7 +187,7 @@ const DEFAULT_PERSONAS = {
     lifetimeSpent: 3.0,
     rating: 4.88,
     reviewsCount: 8,
-    badges: ['🎖️ Advanced Tutor', 'CompTIA Security+', 'Linux Guru', 'Verified Mentor'],
+    badges: ['🎖️ Advanced Tutor', 'CompTIA Security+', 'Linux Guru', 'Verified Tutor'],
     skillsOffered: [
       { id: 'sk_tam_1', name: 'Cyber Security & Ethical Hacking', level: 'Advanced', category: 'Tech', rate: 2.0, tier: 'Advanced', is_verified: 1, quiz_score: 86, cert_count: 1, desc: 'Reconnaissance, Nmap, Wireshark, vulnerability scanning, and OWASP Top 10.' },
       { id: 'sk_tam_2', name: 'Linux System Administration', level: 'Advanced', category: 'Tech', rate: 1.5, tier: 'Silver', is_verified: 1, quiz_score: 91, cert_count: 0, desc: 'Bash scripting, permissions, process management, SSH keys, and firewall setups.' }

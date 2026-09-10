@@ -10,13 +10,13 @@ router.get('/', certificateController.getCertificates);
 router.post('/upload', certificateController.uploadCertificate);
 router.post('/verify-ai', certificateController.verifyCertificateAI);
 
-// Faculty & Super Admin Certificate Approval
-router.post('/verify-admin', authorizeRole(ROLES.FACULTY_ADMIN, ROLES.SUPER_ADMIN), (req, res) => {
+// Faculty & Platform Admin Certificate Approval
+router.post('/verify-admin', authorizeRole(ROLES.ADMIN), (req, res) => {
   res.json({
     success: true,
     message: 'Certificate officially verified by Faculty Coordinator.',
     verifiedBy: req.user ? req.user.name : 'Faculty Coordinator',
-    role: req.user ? req.user.role : 'FACULTY_ADMIN'
+    role: req.user ? req.user.role : 'ADMIN'
   });
 });
 

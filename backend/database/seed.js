@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const { db, initSchema } = require('./db');
 
 async function seedDatabase() {
-  console.log('🌱 Seeding SkillSwap Database with Roles (STUDENT, MENTOR, FACULTY_ADMIN), Auth Credentials, and 4 Tutor Categories...');
+  console.log('🌱 Seeding SkillSwap Database with Roles (STUDENT, ADMIN), Auth Credentials, and 4 Tutor Categories...');
 
   await db.runAsync(`DROP TABLE IF EXISTS support_tickets`);
   await db.runAsync(`DROP TABLE IF EXISTS login_history`);
@@ -21,15 +21,15 @@ async function seedDatabase() {
 
   await initSchema();
 
-  const defaultPasswordHash = bcrypt.hashSync('password123', 8);
+  const defaultPasswordHash = bcrypt.hashSync('Password123', 8);
 
-  // 1. Seed Users with Roles & Auth Credentials
+  // 1. Seed Users with Roles & Auth Credentials (STUDENT and ADMIN)
   const users = [
     {
       id: 'sri',
       email: 'sri@vignan.ac.in',
       password_hash: defaultPasswordHash,
-      role: 'MENTOR',
+      role: 'STUDENT',
       name: 'Sri Dhanush',
       college: 'Vignan University',
       major: 'B.Tech CSE (3rd Year, 1st Sem)',
@@ -48,7 +48,7 @@ async function seedDatabase() {
       id: 'rishitha',
       email: 'rishitha@vignan.ac.in',
       password_hash: defaultPasswordHash,
-      role: 'MENTOR',
+      role: 'STUDENT',
       name: 'Rishitha',
       college: 'Vignan University',
       major: 'B.Tech IT (3rd Year)',
@@ -67,7 +67,7 @@ async function seedDatabase() {
       id: 'bharath',
       email: 'bharath@vignan.ac.in',
       password_hash: defaultPasswordHash,
-      role: 'MENTOR',
+      role: 'STUDENT',
       name: 'Bharath',
       college: 'Vignan University',
       major: 'B.Tech CSE (4th Year)',
@@ -117,14 +117,14 @@ async function seedDatabase() {
       lifetime_spent: 3.0,
       rating: 4.88,
       reviews_count: 8,
-      badges: ['🎖️ Advanced Tutor', 'CompTIA Security+', 'Linux Guru', 'Verified Mentor'],
+      badges: ['🎖️ Advanced Tutor', 'CompTIA Security+', 'Linux Guru', 'Verified Tutor'],
       is_admin: 0
     },
     {
       id: 'admin',
       email: 'skrao@vignan.ac.in',
       password_hash: defaultPasswordHash,
-      role: 'FACULTY_ADMIN',
+      role: 'ADMIN',
       name: 'Dr. S. K. Rao',
       college: 'Vignan University',
       major: 'Faculty Coordinator & Platform Admin',

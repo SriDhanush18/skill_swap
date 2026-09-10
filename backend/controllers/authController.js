@@ -79,12 +79,13 @@ const authController = {
         });
       }
 
-      const assignedRole = Object.values(ROLES).includes(role) ? role : ROLES.STUDENT;
+      const isAdm = role === 'ADMIN' || role === 'FACULTY_ADMIN' || role === 'SUPER_ADMIN';
+      const assignedRole = isAdm ? ROLES.ADMIN : ROLES.STUDENT;
       const passwordHash = await bcrypt.hash(password, 10);
       const userId = 'usr_' + Date.now();
       const userCollege = college || 'Vignan University';
       const userMajor = major || 'B.Tech CSE';
-      const initialCredits = 3.0; // 3.0 Welcome Bonus credits
+      const initialCredits = isAdm ? 999.0 : 3.0; // 3.0 Welcome Bonus credits for students
 
       await db.runAsync(
         `INSERT INTO users (id, email, password_hash, role, name, college, major, avatar, bio, credits, escrow_locked, lifetime_earned, lifetime_spent, rating, reviews_count, badges_json, is_admin, last_login_at, login_count)
@@ -97,11 +98,11 @@ const authController = {
           name.trim(),
           userCollege,
           userMajor,
-          'default_avatar',
-          bio || `Student at ${userCollege} passionate about peer learning.`,
+          assignedRole === ROLES.ADMIN ? 'admin' : 'default_avatar',
+          bio || (isAdm ? `Platform Administrator at ${userCollege}.` : `Student at ${userCollege} passionate about peer learning.`),
           initialCredits,
-          JSON.stringify(['Vignan Student', `${assignedRole}`]),
-          assignedRole === ROLES.FACULTY_ADMIN || assignedRole === ROLES.SUPER_ADMIN ? 1 : 0
+          JSON.stringify(['Vignan Member', `${assignedRole}`]),
+          isAdm ? 1 : 0
         ]
       );
 
@@ -322,7 +323,7 @@ const authController = {
       const user = req.user;
       let logs = [];
 
-      if (user.role === ROLES.FACULTY_ADMIN || user.role === ROLES.SUPER_ADMIN) {
+      if (user.role === ROLES.ADMIN || user.is_admin === 1) {
         // Admins can see platform-wide login logs
         logs = await db.allAsync(
           `SELECT l.*, u.name as user_name 

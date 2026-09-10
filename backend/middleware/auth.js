@@ -9,22 +9,22 @@ const { db } = require('../database/db');
 const JWT_SECRET = process.env.JWT_SECRET || 'skillswap-vignan-jwt-secret-key-2026';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
-// Valid Roles
+// Valid Account Types (Student & Admin)
 const ROLES = {
   STUDENT: 'STUDENT',
-  MENTOR: 'MENTOR',
-  FACULTY_ADMIN: 'FACULTY_ADMIN',
-  SUPER_ADMIN: 'SUPER_ADMIN'
+  ADMIN: 'ADMIN'
 };
 
 /**
  * Generate a signed JWT for a user
  */
 function generateToken(user) {
+  const isAdm = user.is_admin === 1 || user.role === 'ADMIN' || user.role === 'FACULTY_ADMIN' || user.role === 'SUPER_ADMIN';
+  const role = isAdm ? ROLES.ADMIN : ROLES.STUDENT;
   const payload = {
     id: user.id,
     email: user.email,
-    role: user.role || (user.is_admin ? ROLES.FACULTY_ADMIN : ROLES.STUDENT),
+    role,
     name: user.name,
     college: user.college
   };
@@ -124,7 +124,7 @@ async function optionalAuth(req, res, next) {
 
 /**
  * Role-Based Access Control (RBAC) Middleware
- * @param  {...string} allowedRoles Allowed roles (e.g. 'MENTOR', 'FACULTY_ADMIN', 'SUPER_ADMIN')
+ * @param  {...string} allowedRoles Allowed roles (e.g. 'ADMIN')
  */
 function authorizeRole(...allowedRoles) {
   return (req, res, next) => {
@@ -135,21 +135,18 @@ function authorizeRole(...allowedRoles) {
       });
     }
 
-    const userRole = req.user.role || (req.user.is_admin ? ROLES.FACULTY_ADMIN : ROLES.STUDENT);
+    const rawRole = req.user.role || (req.user.is_admin ? 'ADMIN' : 'STUDENT');
+    const isAdm = req.user.is_admin === 1 || rawRole === 'ADMIN' || rawRole === 'FACULTY_ADMIN' || rawRole === 'SUPER_ADMIN';
+    const userRole = isAdm ? ROLES.ADMIN : ROLES.STUDENT;
 
-    // SUPER_ADMIN has god-mode bypass
-    if (userRole === ROLES.SUPER_ADMIN) {
+    if (userRole === ROLES.ADMIN || allowedRoles.includes(userRole) || allowedRoles.includes(rawRole)) {
       return next();
     }
 
-    if (!allowedRoles.includes(userRole)) {
-      return res.status(403).json({
-        success: false,
-        error: `Forbidden: Access restricted. Your role '${userRole}' does not have required permissions: [${allowedRoles.join(', ')}].`
-      });
-    }
-
-    next();
+    return res.status(403).json({
+      success: false,
+      error: `Forbidden: Access restricted to Administrator accounts.`
+    });
   };
 }
 
