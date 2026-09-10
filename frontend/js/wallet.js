@@ -680,66 +680,102 @@ class SkillSwapStore {
   }
 
   // ==========================================
-  // Support Team & Doubt Classification Methods
+  // Support Team & Shared Doubt Classification Methods
   // ==========================================
-  async fetchSupportTickets(filter = {}) {
+  async fetchSupportStats() {
     try {
-      const query = new URLSearchParams(filter).toString();
-      const res = await fetch(`${this.apiBase}/support/tickets?${query}`, {
+      const res = await fetch(`${this.apiBase}/support/stats`, {
         headers: this.getAuthHeaders()
       });
       const data = await res.json();
-      if (data.success && data.tickets) {
-        return data.tickets;
+      if (data.success && data.stats) {
+        return data.stats;
       }
     } catch (e) {
-      console.warn('Could not fetch support tickets:', e.message);
+      console.warn('Could not fetch support stats:', e.message);
+    }
+    return { openDoubts: 0, inProgressDoubts: 0, resolvedDoubts: 0, totalRewardsCredits: 0 };
+  }
+
+  async fetchSupportDoubts(filter = {}) {
+    try {
+      const query = new URLSearchParams(filter).toString();
+      const res = await fetch(`${this.apiBase}/support/doubts?${query}`, {
+        headers: this.getAuthHeaders()
+      });
+      const data = await res.json();
+      if (data.success && (data.doubts || data.tickets)) {
+        return data.doubts || data.tickets;
+      }
+    } catch (e) {
+      console.warn('Could not fetch support doubts:', e.message);
     }
     return [];
   }
 
+  async fetchSupportTickets(filter = {}) {
+    return this.fetchSupportDoubts(filter);
+  }
+
   async checkSupportEligibility(skillName) {
-    const res = await fetch(`${this.apiBase}/support/eligibility?skillName=${encodeURIComponent(skillName)}`, {
+    const res = await fetch(`${this.apiBase}/support/eligibility?skillName=${encodeURIComponent(skillName || '')}`, {
       headers: this.getAuthHeaders()
     });
     return await res.json();
   }
 
-  async createSupportTicket({ skillName, title, description, codeSnippet, issueType, sessionId, attachmentName, attachmentData }) {
-    const res = await fetch(`${this.apiBase}/support/tickets`, {
+  async createSupportDoubt({ category, course, skillName, title, description, codeSnippet, issueType, sessionId, attachmentName, attachmentData }) {
+    const res = await fetch(`${this.apiBase}/support/doubts`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify({ skillName, title, description, codeSnippet, issueType, sessionId, attachmentName, attachmentData })
+      body: JSON.stringify({ category: category || skillName, course: course || skillName, skillName, title, description, codeSnippet, issueType, sessionId, attachmentName, attachmentData })
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Could not create support ticket');
+    if (!data.success) throw new Error(data.error || 'Could not create support doubt');
     return data;
   }
 
-  async claimSupportTicket(ticketId) {
-    const res = await fetch(`${this.apiBase}/support/tickets/${ticketId}/claim`, {
+  async createSupportTicket(data) {
+    return this.createSupportDoubt(data);
+  }
+
+  async acceptSupportDoubt(doubtId) {
+    const res = await fetch(`${this.apiBase}/support/doubts/${doubtId}/accept`, {
       method: 'POST',
       headers: this.getAuthHeaders()
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Could not claim support ticket');
+    if (res.status === 409 || !data.success) {
+      const err = new Error(data.error || 'This doubt has already been accepted by another user.');
+      err.status = res.status;
+      err.isConflict = (res.status === 409);
+      throw err;
+    }
     return data;
   }
 
-  async resolveSupportTicket(ticketId, { classification, solution, recommendedQuizSkill }) {
-    const res = await fetch(`${this.apiBase}/support/tickets/${ticketId}/resolve`, {
+  async claimSupportTicket(ticketId) {
+    return this.acceptSupportDoubt(ticketId);
+  }
+
+  async submitDoubtAnswer(doubtId, { answerText, solution, classification, attachmentName, attachmentData, recommendedAssessmentSkill, recommendedQuizSkill }) {
+    const res = await fetch(`${this.apiBase}/support/doubts/${doubtId}/answer`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
-      body: JSON.stringify({ classification, solution, recommendedQuizSkill })
+      body: JSON.stringify({ answerText: answerText || solution, solution, classification, attachmentName, attachmentData, recommendedAssessmentSkill, recommendedQuizSkill })
     });
     const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Could not resolve support ticket');
+    if (!data.success) throw new Error(data.error || 'Could not submit solution');
     await this.fetchWallet();
     return data;
   }
 
-  async rateSupportTicket(ticketId, rating, feedback) {
-    const res = await fetch(`${this.apiBase}/support/tickets/${ticketId}/rate`, {
+  async resolveSupportTicket(ticketId, data) {
+    return this.submitDoubtAnswer(ticketId, data);
+  }
+
+  async rateSupportDoubt(doubtId, rating, feedback) {
+    const res = await fetch(`${this.apiBase}/support/doubts/${doubtId}/rate`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ rating, feedback })
@@ -747,6 +783,10 @@ class SkillSwapStore {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Could not rate support mentor');
     return data;
+  }
+
+  async rateSupportTicket(ticketId, rating, feedback) {
+    return this.rateSupportDoubt(ticketId, rating, feedback);
   }
 }
 

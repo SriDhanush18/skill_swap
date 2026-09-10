@@ -4972,36 +4972,76 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     },
 
-    async renderSupportDesk() {
+    async renderSupportDesk(silent = false) {
       try {
-        const tickets = await window.store.fetchSupportTickets();
-        this.supportTickets = tickets || [];
+        const [doubts, stats] = await Promise.all([
+          window.store.fetchSupportDoubts(),
+          window.store.fetchSupportStats()
+        ]);
+        this.supportTickets = doubts || [];
 
-        // Calculate KPI metrics
-        const openTickets = this.supportTickets.filter(t => t.status === 'OPEN');
-        const resolvedTickets = this.supportTickets.filter(t => t.status === 'RESOLVED');
-        const totalRewards = resolvedTickets.reduce((sum, t) => sum + (Number(t.reward_credits) || 0), 0);
-
+        // Update Dynamic KPI metrics from database
         const openEl = document.getElementById('supportOpenCount');
-        if (openEl) openEl.textContent = `${openTickets.length} Doubts`;
+        if (openEl) openEl.textContent = `${stats.openDoubts || 0} Doubts`;
 
         const resolvedEl = document.getElementById('supportResolvedCount');
-        if (resolvedEl) resolvedEl.textContent = `${resolvedTickets.length} Solved`;
+        if (resolvedEl) resolvedEl.textContent = `${stats.resolvedDoubts || 0} Solved`;
 
         const rewardsEl = document.getElementById('supportTotalRewards');
-        if (rewardsEl) rewardsEl.textContent = `${totalRewards.toFixed(1)} Cr`;
+        if (rewardsEl) rewardsEl.textContent = `${(stats.totalRewardsCredits || 0).toFixed(1)} Cr`;
 
         // Update sidebar badge
         const badge = document.getElementById('sidebarSupportBadge');
         if (badge) {
-          badge.textContent = `${openTickets.length} Open`;
-          badge.style.display = openTickets.length > 0 ? 'inline-flex' : 'none';
+          const openCount = stats.openDoubts || this.supportTickets.filter(t => t.status === 'OPEN').length;
+          badge.textContent = `${openCount} Open`;
+          badge.style.display = openCount > 0 ? 'inline-flex' : 'none';
         }
 
         this.renderSupportDeskCards();
+        if (!silent) this.startSupportDeskPolling();
       } catch (err) {
         console.error('Error rendering support desk:', err);
       }
+    },
+
+    startSupportDeskPolling() {
+      if (this.supportDeskPollInterval) clearInterval(this.supportDeskPollInterval);
+      this.supportDeskPollInterval = setInterval(async () => {
+        if (this.currentTab === 'view-support') {
+          await this.renderSupportDesk(true);
+        }
+      }, 10000);
+    },
+
+    async acceptSupportDoubt(doubtId, btnElement) {
+      if (btnElement) {
+        btnElement.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Accepting...';
+        btnElement.disabled = true;
+      }
+
+      try {
+        const res = await window.store.acceptSupportDoubt(doubtId);
+        this.showToast('🎉 You accepted this doubt! Write your solution to earn bounty credits.', 'check');
+        await this.renderSupportDesk();
+        this.openResolveSupportModal(doubtId);
+      } catch (err) {
+        if (btnElement) {
+          btnElement.innerHTML = '<i class="fa-solid fa-hand-holding-hand"></i> Accept Doubt';
+          btnElement.disabled = false;
+        }
+
+        if (err.isConflict || err.status === 409 || (err.message && err.message.includes('already been accepted'))) {
+          this.showToast('⚠️ This doubt has already been accepted by another user.', 'lock');
+        } else {
+          alert(err.message || 'Could not accept doubt.');
+        }
+        await this.renderSupportDesk();
+      }
+    },
+
+    async claimSupportTicket(ticketId, btnElement) {
+      return this.acceptSupportDoubt(ticketId, btnElement);
     },
 
     renderSupportDeskCards() {
@@ -5009,34 +5049,43 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!container) return;
 
       const currentPersona = window.store.getCurrentPersona();
-      const currentRole = window.store.getUserRole();
-      const isMentorOrAdmin = currentRole === 'ADMIN' || currentRole === 'STUDENT' || currentPersona.isAdmin;
-
       let filtered = (this.supportTickets || []).slice();
 
-      // Filter by status / type
+      // Filter by status / type / mine
       if (this.supportFilter === 'CODE_BUG') {
-        filtered = filtered.filter(t => t.issue_type === 'CODE_BUG');
+        filtered = filtered.filter(t => (t.issue_type === 'CODE_BUG' || (t.category && t.category.includes('Bug'))));
       } else if (this.supportFilter === 'CONCEPT_DOUBT') {
-        filtered = filtered.filter(t => t.issue_type === 'CONCEPT_DOUBT');
+        filtered = filtered.filter(t => (t.issue_type === 'CONCEPT_DOUBT' || (t.category && t.category.includes('Concept'))));
       } else if (this.supportFilter === 'ARCH_DESIGN') {
-        filtered = filtered.filter(t => t.issue_type === 'ARCH_DESIGN');
+        filtered = filtered.filter(t => (t.issue_type === 'ARCH_DESIGN' || (t.category && t.category.includes('Arch'))));
       } else if (this.supportFilter === 'OPEN') {
         filtered = filtered.filter(t => t.status === 'OPEN');
+      } else if (this.supportFilter === 'ACCEPTED' || this.supportFilter === 'IN_PROGRESS') {
+        filtered = filtered.filter(t => t.status === 'ACCEPTED' || t.status === 'CLAIMED');
       } else if (this.supportFilter === 'RESOLVED') {
-        filtered = filtered.filter(t => t.status === 'RESOLVED');
+        filtered = filtered.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED');
       } else if (this.supportFilter === 'MINE') {
-        filtered = filtered.filter(t => t.student_id === currentPersona.id || t.support_mentor_id === currentPersona.id);
+        // My Doubts / Tasks filter: where current user raised it OR accepted it
+        filtered = filtered.filter(t => 
+          t.raised_by_user_id === currentPersona.id || 
+          t.student_id === currentPersona.id ||
+          t.accepted_by_user_id === currentPersona.id ||
+          t.support_mentor_id === currentPersona.id
+        );
       }
 
       // Filter by search query
       if (this.supportSearchQuery) {
-        const q = this.supportSearchQuery;
+        const q = this.supportSearchQuery.toLowerCase();
         filtered = filtered.filter(t =>
           (t.title && t.title.toLowerCase().includes(q)) ||
           (t.description && t.description.toLowerCase().includes(q)) ||
+          (t.category && t.category.toLowerCase().includes(q)) ||
+          (t.course && t.course.toLowerCase().includes(q)) ||
           (t.skill_name && t.skill_name.toLowerCase().includes(q)) ||
-          (t.student_name && t.student_name.toLowerCase().includes(q))
+          (t.raised_by_name && t.raised_by_name.toLowerCase().includes(q)) ||
+          (t.student_name && t.student_name.toLowerCase().includes(q)) ||
+          (t.accepted_by_name && t.accepted_by_name.toLowerCase().includes(q))
         );
       }
 
@@ -5046,7 +5095,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <i class="fa-solid fa-headset" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
             <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">No Support Doubts Found</h4>
             <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 440px; margin: 0.35rem auto 1.25rem;">
-              ${this.supportSearchQuery ? 'No doubt tickets match your current search query.' : 'Students who attend courses can upload code doubts and get free triage support (0 Credits).'}
+              ${this.supportSearchQuery ? 'No doubts match your search query.' : 'Raise a doubt or ask for help in any engineering topic (Cost: 0 Credits).'}
             </p>
             <button class="btn btn-primary btn-sm" onclick="window.app.openCreateSupportModal()">
               <i class="fa-solid fa-plus-circle"></i> Ask a Doubt Now (0 Cr)
@@ -5077,7 +5126,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               `}
               <div style="text-align: left; overflow: hidden;">
                 <div style="font-weight: 700; font-size: 0.8rem; color: var(--text-primary); text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${safeName}</div>
-                <div style="font-size: 0.68rem; color: var(--text-muted);">${isImg ? '🖼️ Error Screenshot Attachment' : '📄 Source Code / Log File'}</div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);">${isImg ? '🖼️ Error Screenshot' : '📄 Source Code / Log File'}</div>
               </div>
             </div>
             <a href="${t.attachment_data}" download="${safeName}" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 0.2rem 0.55rem; white-space: nowrap;">
@@ -5088,63 +5137,82 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
 
       container.innerHTML = filtered.map(t => {
-        const isOwner = t.student_id === currentPersona.id;
-        const isAssignedMentor = t.support_mentor_id === currentPersona.id;
-        const isOpen = t.status === 'OPEN';
-        const isClaimed = t.status === 'CLAIMED';
-        const isResolved = t.status === 'RESOLVED';
+        const isAuthor = (t.raised_by_user_id === currentPersona.id || t.student_id === currentPersona.id);
+        const isAcceptedByMe = (t.accepted_by_user_id === currentPersona.id || t.support_mentor_id === currentPersona.id);
+        const isOpen = (t.status === 'OPEN');
+        const isAccepted = (t.status === 'ACCEPTED' || t.status === 'CLAIMED');
+        const isResolved = (t.status === 'RESOLVED' || t.status === 'CLOSED');
 
-        const typeLabel = t.issue_type === 'CODE_BUG' ? '🐞 Code Bug' : (t.issue_type === 'CONCEPT_DOUBT' ? '💡 Concept' : '🏗️ Architecture');
-        const typeClass = t.issue_type === 'CODE_BUG' ? 'tag-bug' : (t.issue_type === 'CONCEPT_DOUBT' ? 'tag-concept' : 'tag-arch');
+        const authorName = t.raised_by_name || t.student_name || t.raised_by_user_id || 'Student';
+        const solverName = t.accepted_by_name || t.support_mentor_name || t.accepted_by_user_id || 'Assigned Mentor';
+        const categoryLabel = t.category || t.course || t.skill_name || 'Technical Doubt';
 
-        const statusClass = isOpen ? 'open' : (isClaimed ? 'claimed' : 'resolved');
-        const statusLabel = isOpen ? '⏳ Open' : (isClaimed ? '🛠️ In Progress' : '✓ Resolved');
+        const statusClass = isOpen ? 'open' : (isAccepted ? 'claimed' : 'resolved');
+        const statusBadgeHtml = isOpen 
+          ? `<span class="support-status-pill open" style="background: rgba(245, 158, 11, 0.15); color: #d97706; font-weight: 800;"><i class="fa-solid fa-clock"></i> OPEN</span>`
+          : (isAccepted 
+              ? `<span class="support-status-pill claimed" style="background: rgba(37, 99, 235, 0.15); color: #2563eb; font-weight: 800;"><i class="fa-solid fa-spinner fa-spin"></i> ACCEPTED</span>` 
+              : `<span class="support-status-pill resolved" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 800;"><i class="fa-solid fa-circle-check"></i> RESOLVED</span>`);
 
         return `
-          <div class="support-card status-${statusClass}">
+          <div class="support-card status-${statusClass}" id="doubtCard_${t.id}">
             <div style="display: flex; flex-direction: column; gap: 0.75rem;">
               <div class="support-card-top">
                 <div class="support-badge-group">
-                  <span class="support-tag ${typeClass}">${typeLabel}</span>
-                  <span class="support-tag tag-skill"><i class="fa-solid fa-book-open"></i> ${t.skill_name}</span>
+                  <span class="support-tag tag-skill"><i class="fa-solid fa-book-open"></i> ${escapeHtml(categoryLabel)}</span>
+                  ${t.course && t.course !== categoryLabel ? `<span class="support-tag tag-concept">${escapeHtml(t.course)}</span>` : ''}
                 </div>
-                <span class="support-status-pill ${statusClass}">${statusLabel}</span>
+                ${statusBadgeHtml}
               </div>
 
-              <!-- Course Verification Proof -->
-              <div class="support-eligibility-proof">
-                <i class="fa-solid fa-circle-check" style="color: var(--accent-emerald);"></i>
-                <span>${t.eligibility_proof || 'Verified Course Learner'}</span>
-              </div>
-
+              <!-- Question Title & Description -->
               <div>
-                <h3 class="support-card-title">${t.title}</h3>
-                <p class="support-card-desc" style="margin-top: 0.35rem;">${t.description}</p>
+                <h3 class="support-card-title">${escapeHtml(t.title)}</h3>
+                <p class="support-card-desc" style="margin-top: 0.35rem;">${escapeHtml(t.description)}</p>
               </div>
 
+              <!-- Code Snippet Box -->
               ${t.code_snippet ? `
                 <pre class="support-code-box"><code>${escapeHtml(t.code_snippet)}</code></pre>
               ` : ''}
 
-              <!-- Uploaded Attachment / Screenshot -->
+              <!-- Uploaded Attachment -->
               ${renderAttachmentSnippet(t)}
 
-              <!-- Resolved Solution Box -->
+              <!-- ACCEPTED State Info Banner -->
+              ${isAccepted ? `
+                ${isAcceptedByMe ? `
+                  <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: var(--radius-md); padding: 0.65rem 0.85rem; font-size: 0.8rem; color: #1d4ed8; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                    <span><i class="fa-solid fa-circle-check" style="color: #2563eb;"></i> You accepted this doubt. Write and submit your answer below.</span>
+                    <span style="background: #2563eb; color: #ffffff; padding: 0.15rem 0.45rem; border-radius: var(--radius-sm); font-size: 0.7rem;">Your Task</span>
+                  </div>
+                ` : (isAuthor ? `
+                  <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: var(--radius-md); padding: 0.65rem 0.85rem; font-size: 0.8rem; color: #1d4ed8; font-weight: 700;">
+                    <i class="fa-solid fa-user-check" style="color: #2563eb;"></i> Your doubt has been accepted by <strong>${escapeHtml(solverName)}</strong>. ⏳ Waiting for the solution...
+                  </div>
+                ` : `
+                  <div style="background: rgba(100, 116, 139, 0.08); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: var(--radius-md); padding: 0.65rem 0.85rem; font-size: 0.8rem; color: var(--text-secondary); font-weight: 600;">
+                    <i class="fa-solid fa-lock" style="color: #64748b;"></i> Accepted by <strong>${escapeHtml(solverName)}</strong>. Mentor is currently solving this doubt.
+                  </div>
+                `)}
+              ` : ''}
+
+              <!-- RESOLVED Solution Box -->
               ${isResolved ? `
                 <div class="support-solution-box">
                   <div class="support-solution-header">
-                    <span><i class="fa-solid fa-user-check"></i> Resolved by ${t.support_mentor_name}</span>
+                    <span><i class="fa-solid fa-user-check"></i> Answered by ${escapeHtml(solverName)}</span>
                     <span style="font-weight: 800; color: var(--accent-emerald);">+${t.reward_credits || '1.5'} Cr Bounty</span>
                   </div>
                   <div style="font-size: 0.74rem; font-weight: 700; color: var(--text-muted);">
-                    Classification: <span style="color: var(--primary);">${t.mentor_classification || 'Level 1: Syntax / Typo'}</span>
+                    Classification: <span style="color: var(--primary);">${escapeHtml(t.mentor_classification || 'Level 1: Syntax / Typo')}</span>
                   </div>
-                  <div class="support-solution-body">${escapeHtml(t.mentor_solution || 'Solution provided.')}</div>
+                  <div class="support-solution-body">${escapeHtml(t.mentor_solution || 'Verified solution provided.')}</div>
 
                   ${t.recommended_assessment_skill ? `
                     <div class="support-quiz-recommendation-cta">
                       <div>
-                        <strong>🎯 Follow-Up Assessment:</strong> Take 20-Q AI Quiz in <em>${t.recommended_assessment_skill}</em>
+                        <strong>🎯 Follow-Up Assessment:</strong> Take 20-Q AI Quiz in <em>${escapeHtml(t.recommended_assessment_skill)}</em>
                       </div>
                       <button class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 0.25rem 0.6rem;" onclick="window.app.startQuiz('${t.recommended_assessment_skill}')">
                         <i class="fa-solid fa-play"></i> Take Quiz
@@ -5152,10 +5220,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                   ` : ''}
 
-                  <!-- Student Rating Section -->
-                  ${isOwner ? `
+                  <!-- Original Author Rating Section -->
+                  ${isAuthor ? `
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--border-subtle); padding-top: 0.5rem; margin-top: 0.25rem;">
-                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary);">Rate Support Mentor:</span>
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary);">Rate Mentor's Solution:</span>
                       <div class="support-star-rating">
                         ${[1, 2, 3, 4, 5].map(star => `
                           <i class="fa-${(t.rating || 0) >= star ? 'solid' : 'regular'} fa-star" onclick="window.app.rateSupportTicket('${t.id}', ${star})" title="Rate ${star} Stars"></i>
@@ -5168,37 +5236,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
 
             <!-- Footer Meta & Actions -->
-            <div>
+            <div style="margin-top: 0.75rem;">
               <div class="support-meta-row">
                 <div>
-                  <i class="fa-regular fa-user"></i> Student: <strong>${t.student_name}</strong>
+                  <i class="fa-regular fa-user"></i> Asked by: <strong>${escapeHtml(authorName)}</strong>
                 </div>
                 <div class="support-bounty-badge">
-                  <i class="fa-solid fa-coins"></i> ${isOpen ? 'Bounty: +1.0 - +2.0 Cr' : (isResolved ? `Awarded: +${t.reward_credits} Cr` : 'In Triage')}
+                  <i class="fa-solid fa-coins"></i> ${isOpen ? `Bounty: +${t.reward_credits || '1.5'} Cr` : (isResolved ? `Awarded: +${t.reward_credits} Cr` : 'In Triage')}
                 </div>
               </div>
 
-              <!-- Action Buttons -->
+              <!-- Action Buttons according to State & Persona Permissions -->
               <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                ${isOpen && isMentorOrAdmin ? `
-                  <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="window.app.openResolveSupportModal('${t.id}')">
-                    <i class="fa-solid fa-screwdriver-wrench"></i> Classify & Solve (+1.0 - +2.0 Cr)
-                  </button>
-                  <button class="btn btn-secondary btn-sm" onclick="window.app.claimSupportTicket('${t.id}')">
-                    <i class="fa-solid fa-hand-holding-hand"></i> Claim
+                ${isOpen && !isAuthor ? `
+                  <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="window.app.acceptSupportDoubt('${t.id}', this)">
+                    <i class="fa-solid fa-hand-holding-hand"></i> Accept Doubt (+${t.reward_credits || 1.5} Cr)
                   </button>
                 ` : ''}
 
-                ${isClaimed && isAssignedMentor ? `
-                  <button class="btn btn-emerald btn-sm" style="flex: 1;" onclick="window.app.openResolveSupportModal('${t.id}')">
-                    <i class="fa-solid fa-coins"></i> Submit Solution & Earn Bounty
-                  </button>
-                ` : ''}
-
-                ${isOpen && isOwner ? `
-                  <div style="font-size: 0.76rem; color: var(--accent-amber); font-weight: 700; display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0;">
-                    <i class="fa-solid fa-hourglass-half"></i> Awaiting peer mentor triage (0 Cr charged)
+                ${isOpen && isAuthor ? `
+                  <div style="font-size: 0.78rem; color: #d97706; font-weight: 700; display: flex; align-items: center; gap: 0.35rem; padding: 0.4rem 0;">
+                    <i class="fa-solid fa-hourglass-half"></i> Open • Waiting for a peer tutor to accept (0 Cr cost)
                   </div>
+                ` : ''}
+
+                ${isAccepted && isAcceptedByMe ? `
+                  <button class="btn btn-emerald btn-sm" style="flex: 1;" onclick="window.app.openResolveSupportModal('${t.id}')">
+                    <i class="fa-solid fa-file-signature"></i> Write / Upload Answer (+${t.reward_credits || 1.5} Cr)
+                  </button>
                 ` : ''}
               </div>
             </div>

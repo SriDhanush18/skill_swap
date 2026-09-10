@@ -407,9 +407,74 @@ async function initSchema() {
     await db.runAsync(`ALTER TABLE sessions ADD COLUMN meeting_ended_at DATETIME`);
   } catch (e) { /* column already exists */ }
 
+  // Dedicated Shared Doubts and Answers Tables
+  await db.runAsync(`
+    CREATE TABLE IF NOT EXISTS support_doubts (
+      id TEXT PRIMARY KEY,
+      raised_by_user_id TEXT NOT NULL,
+      category TEXT NOT NULL,
+      course TEXT,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      code_snippet TEXT,
+      attachment_url TEXT,
+      attachment_name TEXT,
+      attachment_data TEXT,
+      status TEXT NOT NULL DEFAULT 'OPEN',
+      accepted_by_user_id TEXT,
+      accepted_at DATETIME,
+      resolved_at DATETIME,
+      reward_credits REAL NOT NULL DEFAULT 1.5,
+      rating INTEGER,
+      feedback TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (raised_by_user_id) REFERENCES users(id),
+      FOREIGN KEY (accepted_by_user_id) REFERENCES users(id)
+    )
+  `);
+
+  await db.runAsync(`
+    CREATE TABLE IF NOT EXISTS support_answers (
+      id TEXT PRIMARY KEY,
+      doubt_id TEXT NOT NULL,
+      answered_by_user_id TEXT NOT NULL,
+      answer_text TEXT NOT NULL,
+      classification TEXT,
+      attachment_url TEXT,
+      attachment_name TEXT,
+      attachment_data TEXT,
+      recommended_assessment_skill TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (doubt_id) REFERENCES support_doubts(id),
+      FOREIGN KEY (answered_by_user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Migrate any tickets to support_doubts if support_doubts is empty
   try {
-    await db.runAsync(`ALTER TABLE sessions ADD COLUMN meeting_session_token TEXT`);
-  } catch (e) { /* column already exists */ }
+    const doubtsCount = await db.getAsync(`SELECT COUNT(*) as count FROM support_doubts`);
+    if (doubtsCount && doubtsCount.count === 0) {
+      await db.runAsync(`
+        INSERT OR IGNORE INTO support_doubts (id, raised_by_user_id, category, course, title, description, code_snippet, attachment_name, attachment_data, status, accepted_by_user_id, accepted_at, resolved_at, reward_credits, rating, feedback, created_at)
+        SELECT id, student_id, skill_name, skill_name, title, description, code_snippet, attachment_name, attachment_data, status, support_mentor_id, 
+               CASE WHEN support_mentor_id IS NOT NULL THEN created_at ELSE NULL END,
+               resolved_at, reward_credits, rating, feedback, created_at
+        FROM support_tickets
+      `);
+
+      // Also migrate any solutions to support_answers
+      await db.runAsync(`
+        INSERT OR IGNORE INTO support_answers (id, doubt_id, answered_by_user_id, answer_text, classification, recommended_assessment_skill, created_at)
+        SELECT 'ans_' || id, id, support_mentor_id, mentor_solution, mentor_classification, recommended_assessment_skill, resolved_at
+        FROM support_tickets
+        WHERE status = 'RESOLVED' AND support_mentor_id IS NOT NULL AND mentor_solution IS NOT NULL
+      `);
+    }
+  } catch (e) {
+    console.warn('Doubts migration notice:', e.message);
+  }
 }
 
 module.exports = {
