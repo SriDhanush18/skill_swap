@@ -24,6 +24,231 @@
 </head>
 <body>
 
+  <!-- ======================================================== -->
+  <!-- ENTRANCE LOGIN & REGISTRATION PORTAL OVERLAY             -->
+  <!-- ======================================================== -->
+  <div class="entrance-portal-overlay" id="entrancePortalOverlay">
+    <!-- Ambient Background Lighting Orbs -->
+    <div class="portal-bg-glow portal-bg-glow-1"></div>
+    <div class="portal-bg-glow portal-bg-glow-2"></div>
+    <div class="portal-bg-glow portal-bg-glow-3"></div>
+
+    <div class="entrance-portal-container">
+      <!-- LEFT HERO SHOWCASE -->
+      <div class="portal-hero-col">
+        <div class="portal-university-badge">
+          <i class="fa-solid fa-building-columns"></i>
+          <span>Vignan University Academic Merit Platform</span>
+        </div>
+
+        <h1 class="portal-hero-title">
+          <span class="gradient-text-purple">SkillSwap</span>
+          <span class="gradient-text-blue">Peer-to-Peer</span>
+          <span class="gradient-text-gold">Skill Exchange</span>
+          <span style="color: var(--text-primary);">&amp; Certification Hub</span>
+        </h1>
+
+        <p class="portal-hero-desc">
+          Cashless academic time-banking platform with AI dynamic 20-question assessments (+3/-1/0), DocVerify forensic certificate verification, and 4-tier tutor credit classification.
+        </p>
+
+        <!-- 4 Feature Highlight Cards -->
+        <div class="portal-features-list">
+          <div class="portal-feature-item">
+            <div class="portal-feature-icon icon-coins">
+              <i class="fa-solid fa-coins"></i>
+            </div>
+            <div class="portal-feature-text">
+              <h4>Time Banking</h4>
+              <p>1 Hour Taught = 1.0 to 2.5 Skill Credits for your wallet</p>
+            </div>
+          </div>
+
+          <div class="portal-feature-item">
+            <div class="portal-feature-icon icon-quiz">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+            <div class="portal-feature-text">
+              <h4>AI Dynamic Quiz</h4>
+              <p>20-Question domain assessments with negative marking</p>
+            </div>
+          </div>
+
+          <div class="portal-feature-item">
+            <div class="portal-feature-icon icon-verify">
+              <i class="fa-solid fa-certificate"></i>
+            </div>
+            <div class="portal-feature-text">
+              <h4>DocVerify Forensic</h4>
+              <p>Pixel hologram size &amp; institutional grid verification</p>
+            </div>
+          </div>
+
+          <div class="portal-feature-item">
+            <div class="portal-feature-icon icon-tiers">
+              <i class="fa-solid fa-award"></i>
+            </div>
+            <div class="portal-feature-text">
+              <h4>4-Tier Ratings</h4>
+              <p>Bronze, Silver, Advanced &amp; Elite Master tutor tiers</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT INTERACTIVE AUTH CARD -->
+      <div class="portal-auth-col">
+        <div class="portal-auth-card">
+          <!-- Top Multi-Color Accent Strip -->
+          <div class="portal-card-top-accent"></div>
+
+          <!-- Tab Switcher -->
+          <div class="portal-auth-tabs">
+            <button type="button" class="portal-tab-btn active" id="portalTabSignInBtn" data-target="portalSignInForm">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              <span>Sign In</span>
+            </button>
+            <button type="button" class="portal-tab-btn" id="portalTabSignUpBtn" data-target="portalSignUpForm">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Sign Up</span>
+            </button>
+          </div>
+
+          <!-- SIGN IN FORM -->
+          <form id="portalSignInForm" class="portal-auth-form active">
+            <div class="portal-form-group">
+              <label class="portal-form-label" for="portalLoginEmail">Vignan Email or User ID</label>
+              <div class="portal-input-wrapper">
+                <i class="fa-regular fa-envelope portal-input-icon"></i>
+                <input type="text" id="portalLoginEmail" class="portal-form-control" placeholder="e.g. sri@vignan.ac.in or sri" required>
+              </div>
+            </div>
+
+            <div class="portal-form-group">
+              <label class="portal-form-label" for="portalLoginPassword">Password</label>
+              <div class="portal-input-wrapper">
+                <i class="fa-solid fa-lock portal-input-icon"></i>
+                <input type="password" id="portalLoginPassword" class="portal-form-control" placeholder="Enter password (starts with Capital Letter)" required>
+              </div>
+              <span class="portal-field-hint">
+                <i class="fa-solid fa-shield-check"></i> Starts with Capital Letter (A-Z) • Min 6 characters
+              </span>
+            </div>
+
+            <div id="portalLoginErrorMsg" class="portal-feedback-error" style="display: none;"></div>
+
+            <button type="submit" class="portal-btn-primary" id="portalSubmitSignInBtn">
+              <span>Sign In to Dashboard</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </form>
+
+          <!-- SIGN UP (REGISTER) FORM -->
+          <form id="portalSignUpForm" class="portal-auth-form" style="display: none;">
+            <div class="portal-form-group">
+              <label class="portal-form-label" for="portalRegName">Full Name</label>
+              <div class="portal-input-wrapper">
+                <i class="fa-regular fa-user portal-input-icon"></i>
+                <input type="text" id="portalRegName" class="portal-form-control" placeholder="e.g. Sri Dhanush" required>
+              </div>
+            </div>
+
+            <div class="portal-form-row">
+              <div class="portal-form-group">
+                <label class="portal-form-label" for="portalRegEmail">Vignan Email</label>
+                <div class="portal-input-wrapper">
+                  <i class="fa-regular fa-envelope portal-input-icon"></i>
+                  <input type="email" id="portalRegEmail" class="portal-form-control" placeholder="e.g. sri@vignan.ac.in" required>
+                </div>
+              </div>
+              <div class="portal-form-group">
+                <label class="portal-form-label" for="portalRegPassword">Password</label>
+                <div class="portal-input-wrapper">
+                  <i class="fa-solid fa-lock portal-input-icon"></i>
+                  <input type="password" id="portalRegPassword" class="portal-form-control" placeholder="e.g. Password123" minlength="6" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="portal-form-row">
+              <div class="portal-form-group">
+                <label class="portal-form-label" for="portalRegMajor">Branch &amp; Year</label>
+                <div class="portal-input-wrapper">
+                  <i class="fa-solid fa-graduation-cap portal-input-icon"></i>
+                  <input type="text" id="portalRegMajor" class="portal-form-control" placeholder="e.g. B.Tech CSE (3rd Year)" required>
+                </div>
+              </div>
+              <div class="portal-form-group">
+                <label class="portal-form-label" for="portalRegRole">Account Role</label>
+                <div class="portal-input-wrapper">
+                  <i class="fa-solid fa-user-shield portal-input-icon"></i>
+                  <select id="portalRegRole" class="portal-form-control portal-select">
+                    <option value="STUDENT">STUDENT (Peer Learner &amp; Tutor)</option>
+                    <option value="ADMIN">ADMIN (Platform Administrator)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div id="portalRegErrorMsg" class="portal-feedback-error" style="display: none;"></div>
+
+            <button type="submit" class="portal-btn-primary" id="portalSubmitSignUpBtn">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Create Account &amp; Join</span>
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="portal-divider">
+            <span>OR FAST-LOGIN WITH DEMO PERSONAS</span>
+          </div>
+
+          <!-- Fast-Login Persona Cards -->
+          <div class="portal-demo-personas-grid">
+            <!-- Sri Dhanush -->
+            <div class="portal-persona-card" data-persona="sri" title="Click to Fast-Login as Sri Dhanush">
+              <div class="portal-persona-avatar-box">
+                <img src="" id="portalAvatarSri" class="portal-persona-img" alt="Sri">
+                <span class="portal-persona-online-dot"></span>
+              </div>
+              <div class="portal-persona-info">
+                <div class="portal-persona-name">Sri Dhanush (You)</div>
+                <div class="portal-persona-sub"><span class="portal-tier-badge elite">🥇 Elite Master</span> • Python &amp; ML</div>
+              </div>
+              <i class="fa-solid fa-chevron-right portal-persona-arrow"></i>
+            </div>
+
+            <!-- Rishitha -->
+            <div class="portal-persona-card" data-persona="rishitha" title="Click to Fast-Login as Rishitha">
+              <div class="portal-persona-avatar-box">
+                <img src="" id="portalAvatarRishitha" class="portal-persona-img" alt="Rishitha">
+                <span class="portal-persona-online-dot"></span>
+              </div>
+              <div class="portal-persona-info">
+                <div class="portal-persona-name">Rishitha</div>
+                <div class="portal-persona-sub"><span class="portal-tier-badge elite">🥇 Elite Master</span> • UI/UX Figma</div>
+              </div>
+              <i class="fa-solid fa-chevron-right portal-persona-arrow"></i>
+            </div>
+
+            <!-- Dr. S. K. Rao -->
+            <div class="portal-persona-card" data-persona="admin" title="Click to Fast-Login as Dr. S. K. Rao">
+              <div class="portal-persona-avatar-box">
+                <img src="" id="portalAvatarAdmin" class="portal-persona-img" alt="Dr. S. K. Rao">
+                <span class="portal-persona-online-dot"></span>
+              </div>
+              <div class="portal-persona-info">
+                <div class="portal-persona-name">Dr. S. K. Rao</div>
+                <div class="portal-persona-sub"><span class="portal-tier-badge admin">🛡️ Admin</span> • Faculty Coordinator</div>
+              </div>
+              <i class="fa-solid fa-chevron-right portal-persona-arrow"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Top Navigation Bar -->
   <header class="top-navbar">
     <div class="brand-wrapper" id="brandHomeBtn">

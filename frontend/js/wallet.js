@@ -167,8 +167,13 @@ class SkillSwapStore {
   logout() {
     this.setToken(null);
     this.currentUser = null;
-    this.currentPersonaId = 'sri';
+    this.currentPersonaId = null;
     localStorage.removeItem('skillswap_active_persona');
+    sessionStorage.removeItem('skillswap_logged_in');
+  }
+
+  isSessionActive() {
+    return !!(this.token || localStorage.getItem('skillswap_active_persona') || sessionStorage.getItem('skillswap_logged_in'));
   }
 
   getCurrentPersona() {

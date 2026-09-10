@@ -71,6 +71,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       this.bindEvents();
+      this.initEntrancePortal();
+
+      // Check active authentication session state
+      if (!window.store.isSessionActive()) {
+        this.showEntrancePortal();
+      } else {
+        this.hideEntrancePortal();
+      }
+
       await this.renderAll();
       this.startSessionTimer();
     },
@@ -135,6 +144,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('dropdownEditProfileBtn')?.addEventListener('click', () => {
         personaDropdown?.classList.remove('show');
         this.openEditProfileModal();
+      });
+
+      // Sign Out from dropdown -> returns to Entrance Login Portal
+      document.getElementById('dropdownLogoutBtn')?.addEventListener('click', () => {
+        personaDropdown?.classList.remove('show');
+        window.store.logout();
+        this.showEntrancePortal();
+        this.showToast('You have signed out of your dashboard.', 'check');
       });
 
       // 3. Notifications Dropdown
@@ -527,6 +544,230 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('profileAddTeachBtn')?.addEventListener('click', () => this.openAddSkillModal('offered'));
       document.getElementById('profileAddLearnBtn')?.addEventListener('click', () => this.openAddSkillModal('wanted'));
       document.getElementById('walletEarnMoreBtn')?.addEventListener('click', () => this.switchView('view-matches'));
+    },
+
+    // ==========================================
+    // Entrance Login Portal Controller
+    // ==========================================
+    initEntrancePortal() {
+      // 1. Setup Avatar Preset Images for Quick Login Cards
+      const sriAvatar = document.getElementById('portalAvatarSri');
+      const rishithaAvatar = document.getElementById('portalAvatarRishitha');
+      const adminAvatar = document.getElementById('portalAvatarAdmin');
+
+      if (sriAvatar) sriAvatar.src = window.getStudentAvatar('sri');
+      if (rishithaAvatar) rishithaAvatar.src = window.getStudentAvatar('rishitha');
+      if (adminAvatar) adminAvatar.src = window.getStudentAvatar('admin');
+
+      // 2. Tab Switching (Sign In vs Sign Up)
+      const tabSignInBtn = document.getElementById('portalTabSignInBtn');
+      const tabSignUpBtn = document.getElementById('portalTabSignUpBtn');
+      const signInForm = document.getElementById('portalSignInForm');
+      const signUpForm = document.getElementById('portalSignUpForm');
+
+      tabSignInBtn?.addEventListener('click', () => {
+        tabSignInBtn.classList.add('active');
+        tabSignUpBtn?.classList.remove('active');
+        if (signInForm) {
+          signInForm.style.display = 'flex';
+          signInForm.classList.add('active');
+        }
+        if (signUpForm) {
+          signUpForm.style.display = 'none';
+          signUpForm.classList.remove('active');
+        }
+      });
+
+      tabSignUpBtn?.addEventListener('click', () => {
+        tabSignUpBtn.classList.add('active');
+        tabSignInBtn?.classList.remove('active');
+        if (signUpForm) {
+          signUpForm.style.display = 'flex';
+          signUpForm.classList.add('active');
+        }
+        if (signInForm) {
+          signInForm.style.display = 'none';
+          signInForm.classList.remove('active');
+        }
+      });
+
+      // 3. Sign In Form Submission
+      signInForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('portalLoginEmail');
+        const passInput = document.getElementById('portalLoginPassword');
+        const errBox = document.getElementById('portalLoginErrorMsg');
+        const submitBtn = document.getElementById('portalSubmitSignInBtn');
+
+        if (errBox) errBox.style.display = 'none';
+
+        const email = emailInput?.value?.trim();
+        const password = passInput?.value;
+
+        if (!email || !password) {
+          if (errBox) {
+            errBox.textContent = 'Please provide both email/User ID and password.';
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+
+        if (!/^[A-Z]/.test(password)) {
+          if (errBox) {
+            errBox.textContent = 'Password must start with a Capital Letter (A-Z).';
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Verifying...</span>`;
+          }
+
+          const res = await window.store.login(email, password);
+          sessionStorage.setItem('skillswap_logged_in', 'true');
+          
+          this.hideEntrancePortal();
+          await this.renderAll();
+          this.showToast(`Welcome back, ${res.user?.name || 'Student'}!`, 'check');
+        } catch (err) {
+          if (errBox) {
+            errBox.textContent = err.message || 'Login failed. Please check credentials.';
+            errBox.style.display = 'block';
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<span>Sign In to Dashboard</span> <i class="fa-solid fa-arrow-right"></i>`;
+          }
+        }
+      });
+
+      // 4. Sign Up Form Submission
+      signUpForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('portalRegName')?.value?.trim();
+        const email = document.getElementById('portalRegEmail')?.value?.trim();
+        const password = document.getElementById('portalRegPassword')?.value;
+        const major = document.getElementById('portalRegMajor')?.value?.trim();
+        const role = document.getElementById('portalRegRole')?.value || 'STUDENT';
+        const errBox = document.getElementById('portalRegErrorMsg');
+        const submitBtn = document.getElementById('portalSubmitSignUpBtn');
+
+        if (errBox) errBox.style.display = 'none';
+
+        if (!name || !email || !password || !major) {
+          if (errBox) {
+            errBox.textContent = 'Please fill all required registration fields.';
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+
+        if (!/^[A-Z]/.test(password)) {
+          if (errBox) {
+            errBox.textContent = 'Password must start with a Capital Letter (A-Z).';
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+
+        if (password.length < 6) {
+          if (errBox) {
+            errBox.textContent = 'Password must be at least 6 characters long.';
+            errBox.style.display = 'block';
+          }
+          return;
+        }
+
+        try {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Creating account...</span>`;
+          }
+
+          const res = await window.store.register({
+            name,
+            email,
+            password,
+            major,
+            role,
+            college: 'Vignan University',
+            bio: `Enthusiastic ${role === 'ADMIN' ? 'Platform Administrator' : 'Student & Peer Learner'}`
+          });
+          sessionStorage.setItem('skillswap_logged_in', 'true');
+
+          this.hideEntrancePortal();
+          await this.renderAll();
+          this.showToast(`Account created! Welcome, ${res.user?.name || name} (3.0 Cr Granted)!`, 'check');
+        } catch (err) {
+          if (errBox) {
+            errBox.textContent = err.message || 'Registration failed.';
+            errBox.style.display = 'block';
+          }
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-user-plus"></i> <span>Create Account & Join</span>`;
+          }
+        }
+      });
+
+      // 5. Demo Persona Fast-Login Cards
+      document.querySelectorAll('.portal-persona-card').forEach(card => {
+        card.addEventListener('click', async () => {
+          const personaId = card.getAttribute('data-persona');
+          if (!personaId) return;
+
+          try {
+            card.style.opacity = '0.7';
+            await window.store.switchPersona(personaId);
+            sessionStorage.setItem('skillswap_logged_in', 'true');
+            
+            this.hideEntrancePortal();
+            await this.renderAll();
+            const current = window.store.getCurrentPersona();
+            this.showToast(`Logged in as ${current?.name || personaId}!`, 'check');
+          } catch (err) {
+            console.warn('Fast-login note:', err);
+            this.hideEntrancePortal();
+            await this.renderAll();
+          } finally {
+            card.style.opacity = '1';
+          }
+        });
+      });
+    },
+
+    showEntrancePortal() {
+      const overlay = document.getElementById('entrancePortalOverlay');
+      if (overlay) {
+        overlay.classList.remove('portal-hidden');
+        overlay.style.display = 'flex';
+        // Clear any password inputs
+        const pass = document.getElementById('portalLoginPassword');
+        if (pass) pass.value = '';
+        const regPass = document.getElementById('portalRegPassword');
+        if (regPass) regPass.value = '';
+        const loginErr = document.getElementById('portalLoginErrorMsg');
+        if (loginErr) loginErr.style.display = 'none';
+        const regErr = document.getElementById('portalRegErrorMsg');
+        if (regErr) regErr.style.display = 'none';
+      }
+    },
+
+    hideEntrancePortal() {
+      const overlay = document.getElementById('entrancePortalOverlay');
+      if (overlay) {
+        overlay.classList.add('portal-hidden');
+        setTimeout(() => {
+          if (overlay.classList.contains('portal-hidden')) {
+            overlay.style.display = 'none';
+          }
+        }, 450);
+      }
     },
 
     bindModalEvents() {
