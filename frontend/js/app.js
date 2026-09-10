@@ -510,15 +510,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       chatForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const input = document.getElementById('chatMessageInput');
-        const text = input.value.trim();
-        if (text) {
+        const text = input?.value?.trim();
+        if (text && this.activeChatContact) {
           input.value = '';
           try {
             await window.store.sendMessage(this.activeChatContact, text);
-            await this.renderChatMessages();
-            this.showToast(`Message sent to ${window.store.personas[this.activeChatContact]?.name}`, 'message');
+            await this.renderChatMessages(true);
           } catch (err) {
-            console.error(err);
+            console.error('Send message error:', err);
+            this.showToast(err.message || 'Could not send message', 'triangle-exclamation');
           }
         }
       });
@@ -2920,7 +2920,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (viewId === 'view-room') this.renderLiveRoom();
       if (viewId === 'view-support') this.renderSupportDesk();
       if (viewId === 'view-wallet') this.renderWallet();
-      if (viewId === 'view-chat') this.renderChat();
+      if (viewId === 'view-chat') {
+        this.renderChat();
+      } else {
+        this.stopChatLivePolling();
+      }
       if (viewId === 'view-profile') this.renderProfile();
 
       // Direct scrollbar to subpage view immediately
@@ -4415,22 +4419,34 @@ document.addEventListener('DOMContentLoaded', async () => {
       const current = window.store.getCurrentPersona();
       const peers = Object.values(window.store.personas).filter(p => p.id !== current.id && !p.isAdmin && !p.is_admin);
 
+      if (!this.activeChatContact || !peers.some(p => p.id === this.activeChatContact)) {
+        this.activeChatContact = peers[0]?.id || 'rishitha';
+      }
+
       contactsList.innerHTML = peers.map(peer => {
-        const topSkill = peer.skillsOffered[0] || { name: 'Peer Mentor', rate: 2.5 };
+        const topSkill = peer.skillsOffered?.[0] || { name: 'Peer Mentor', rate: 2.5, tier: 'Elite Master' };
+        const isSelected = this.activeChatContact === peer.id;
         return `
-          <div class="chat-contact-item ${this.activeChatContact === peer.id ? 'active' : ''}" onclick="window.app.selectChatContact('${peer.id}')" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 0.85rem;">
-            ${window.getUserLogoCardHtml(peer, 40)}
+          <div class="chat-contact-item ${isSelected ? 'active' : ''}" onclick="window.app.selectChatContact('${peer.id}')" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.95rem; cursor: pointer; border-radius: var(--radius-md); transition: all 0.2s ease;">
+            <div style="position: relative; flex-shrink: 0;">
+              ${window.getUserLogoCardHtml ? window.getUserLogoCardHtml(peer, 42) : `<img src="${window.getStudentAvatar(peer.id)}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;">`}
+              <span class="online-indicator" style="position: absolute; bottom: 0; right: 0; width: 10px; height: 10px; background: #10b981; border: 2px solid var(--bg-card); border-radius: 50%;"></span>
+            </div>
             <div style="flex: 1; overflow: hidden; min-width: 0;">
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${peer.name}</div>
-              <div style="font-size: 0.76rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${topSkill.name} (${topSkill.rate || 2.5} Cr/hr)
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${this.escapeHtml(peer.name)}</div>
+                <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 600;"><i class="fa-solid fa-lock" style="font-size:0.6rem; opacity:0.6;"></i> E2E</span>
+              </div>
+              <div style="font-size: 0.76rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.15rem;">
+                ${this.escapeHtml(topSkill.name)} • <span style="font-weight: 700; color: var(--primary);">${topSkill.rate || 2.5} Cr/hr</span>
               </div>
             </div>
           </div>
         `;
       }).join('');
 
-      await this.renderChatMessages();
+      await this.renderChatMessages(true);
+      this.startChatLivePolling();
     },
 
     async selectChatContact(cId) {
@@ -4438,12 +4454,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       await this.renderChat();
     },
 
-    async renderChatMessages() {
+    startChatLivePolling() {
+      if (this.chatPollInterval) clearInterval(this.chatPollInterval);
+      this.chatPollInterval = setInterval(async () => {
+        if (this.currentTab === 'view-chat' && this.activeChatContact) {
+          await this.renderChatMessages(false);
+        }
+      }, 2500);
+    },
+
+    stopChatLivePolling() {
+      if (this.chatPollInterval) {
+        clearInterval(this.chatPollInterval);
+        this.chatPollInterval = null;
+      }
+    },
+
+    async renderChatMessages(forceScrollBottom = false) {
       const peer = window.store.personas[this.activeChatContact];
       if (!peer) return;
 
-      document.getElementById('activeChatName').textContent = peer.name;
-      document.getElementById('activeChatAvatar').src = window.getStudentAvatar(peer.id);
+      const nameEl = document.getElementById('activeChatName');
+      if (nameEl) nameEl.textContent = peer.name;
+
+      const avatarEl = document.getElementById('activeChatAvatar');
+      if (avatarEl) avatarEl.src = window.getStudentAvatar(peer.id);
+
+      const statusEl = document.getElementById('activeChatStatus');
+      if (statusEl) {
+        const topSkill = peer.skillsOffered?.[0] || { name: 'Peer Mentor', rate: 2.5, tier: 'Elite Master' };
+        statusEl.innerHTML = `● Active Now • <strong>${this.escapeHtml(topSkill.name)}</strong> (${topSkill.rate || 2.5} Cr/hr • ${this.escapeHtml(topSkill.tier || 'Elite')})`;
+      }
 
       const msgContainer = document.getElementById('chatMessagesContainer');
       if (!msgContainer) return;
@@ -4451,17 +4492,68 @@ document.addEventListener('DOMContentLoaded', async () => {
       const messages = await window.store.fetchChatMessages(this.activeChatContact);
       const current = window.store.getCurrentPersona();
 
-      msgContainer.innerHTML = messages.map(msg => {
-        const isOut = msg.sender_id === current.id;
-        return `
-          <div class="message-bubble ${isOut ? 'outgoing' : 'incoming'}">
-            <div>${msg.text}</div>
-            <div class="message-time">${msg.time}</div>
+      const wasNearBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 90;
+
+      const e2eHeaderHtml = `
+        <div class="chat-e2e-notice">
+          <i class="fa-solid fa-lock"></i>
+          <span>Messages are end-to-end encrypted. No one outside of this chat, not even SkillSwap, can read them.</span>
+        </div>
+      `;
+
+      if (!messages || messages.length === 0) {
+        msgContainer.innerHTML = e2eHeaderHtml + `
+          <div style="text-align: center; padding: 2.5rem 1.5rem; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 75%;">
+            <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(99,102,241,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--primary); margin-bottom: 0.85rem;">
+              <i class="fa-solid fa-comments"></i>
+            </div>
+            <h4 style="font-weight: 800; font-size: 1.05rem; color: var(--text-primary); margin-bottom: 0.35rem;">Start a Direct Chat with ${this.escapeHtml(peer.name)}</h4>
+            <p style="font-size: 0.82rem; max-width: 360px; line-height: 1.45; margin-bottom: 1.25rem;">
+              Send an instant message to discuss course topics, schedule 1-on-1 swaps, or clarify doubts in real-time.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; max-width: 440px;">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.sendQuickChatMessage('👋 Hi ${this.escapeQuotes(peer.name)}, are you available for a skill swap session?')">
+                👋 "Hi ${this.escapeHtml(peer.name)}, are you free for a swap?"
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.sendQuickChatMessage('💡 I want to learn ${this.escapeQuotes(peer.skillsOffered?.[0]?.name || 'your courses')}!')">
+                💡 "I want to learn ${this.escapeHtml(peer.skillsOffered?.[0]?.name || 'courses')}!"
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="window.app.sendQuickChatMessage('📅 Can we schedule a 1-on-1 session this week?')">
+                📅 "Can we schedule a 1-on-1 session?"
+              </button>
+            </div>
           </div>
         `;
-      }).join('');
+      } else {
+        msgContainer.innerHTML = e2eHeaderHtml + messages.map(msg => {
+          const isOut = msg.sender_id === current.id;
+          return `
+            <div class="message-bubble ${isOut ? 'outgoing' : 'incoming'}">
+              <div class="message-text">${this.escapeHtml(msg.text)}</div>
+              <div class="message-time">
+                <i class="fa-solid fa-lock" style="font-size: 0.6rem; opacity: 0.6; margin-right: 3px;"></i>
+                <span>${msg.time || 'Just now'}</span>
+                ${isOut ? '<span class="chat-read-receipt" style="color: #60a5fa; margin-left: 4px; font-size: 0.72rem;" title="Delivered & Read"><i class="fa-solid fa-check-double"></i></span>' : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
 
-      msgContainer.scrollTop = msgContainer.scrollHeight;
+      if (forceScrollBottom || wasNearBottom) {
+        msgContainer.scrollTop = msgContainer.scrollHeight;
+      }
+    },
+
+    async sendQuickChatMessage(quickText) {
+      if (!quickText || !this.activeChatContact) return;
+      try {
+        await window.store.sendMessage(this.activeChatContact, quickText);
+        await this.renderChatMessages(true);
+      } catch (err) {
+        console.error('Quick message send error:', err);
+        this.showToast(err.message || 'Could not send message', 'triangle-exclamation');
+      }
     },
 
     async renderProfile() {
@@ -5153,6 +5245,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast.style.transition = '0.3s ease';
         setTimeout(() => toast.remove(), 300);
       }, 4000);
+    },
+
+    escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    },
+
+    escapeQuotes(str) {
+      if (!str) return '';
+      return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
   };
 

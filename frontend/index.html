@@ -1115,13 +1115,20 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
           <div class="chat-window">
             <div class="chat-window-header">
               <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <img src="" alt="Avatar" class="persona-avatar" id="activeChatAvatar">
+                <img src="" alt="Avatar" class="persona-avatar" id="activeChatAvatar" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-medium);">
                 <div>
-                  <h4 id="activeChatName" style="font-size: 0.95rem; font-weight: 700;">Rishitha</h4>
-                  <span style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 600;">● Online • 🥇 Elite Master Tutor (2.5 Cr/hr)</span>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <h4 id="activeChatName" style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin: 0;">Rishitha</h4>
+                    <span class="chat-e2e-badge" style="font-size: 0.68rem; background: rgba(99, 102, 241, 0.12); color: var(--primary); padding: 0.1rem 0.45rem; border-radius: var(--radius-full); font-weight: 700;">
+                      <i class="fa-solid fa-shield-halved"></i> E2E Encrypted
+                    </span>
+                  </div>
+                  <span id="activeChatStatus" style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 600; display: block; margin-top: 0.1rem;">
+                    ● Active Now • 🥇 Elite Master Tutor (2.5 Cr/hr)
+                  </span>
                 </div>
               </div>
-              <div style="display: flex; gap: 0.5rem;">
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
                 <button class="btn btn-secondary btn-sm" id="chatScheduleSwapBtn">
                   <i class="fa-regular fa-calendar-plus"></i> Propose Swap
                 </button>
@@ -1135,9 +1142,13 @@ console.log("Welcome students! Tutor earns 1 credit for each student who attends
 
             <!-- Input Bar -->
             <form class="chat-input-bar" id="chatForm">
-              <input type="text" id="chatMessageInput" placeholder="Type a message (e.g. Let's do a 2-hour swap of Python OOP for Figma tokens)..." autocomplete="off">
-              <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1.25rem;">
-                <i class="fa-solid fa-paper-plane"></i> Send
+              <div class="chat-input-wrapper" style="flex: 1; display: flex; align-items: center; background: var(--bg-subtle); border: 1.5px solid var(--border-medium); border-radius: var(--radius-full); padding: 0 0.85rem; transition: all 0.2s ease;">
+                <i class="fa-regular fa-message" style="color: var(--text-muted); font-size: 0.9rem; margin-right: 0.5rem;"></i>
+                <input type="text" id="chatMessageInput" placeholder="Type a message (e.g. Hey, are you free for a 1-hour swap?)..." autocomplete="off" style="flex: 1; height: 42px; border: none; background: transparent; outline: none; font-size: 0.88rem; color: var(--text-primary); font-family: inherit;">
+              </div>
+              <button type="submit" class="btn btn-primary" id="chatSendBtn" style="height: 42px; padding: 0 1.35rem; border-radius: var(--radius-full); display: flex; align-items: center; gap: 0.45rem; font-weight: 700;">
+                <span>Send</span>
+                <i class="fa-solid fa-paper-plane"></i>
               </button>
             </form>
           </div>
